@@ -1,7 +1,9 @@
 # Roadmap
 
-Premissas (a confirmar em `decisoes.md`): escopo inicial = presidente, 27 governadores, 513 deputados federais e
-81 senadores (cerca de 620 pessoas), custo zero de infraestrutura, fontes oficiais primeiro.
+Premissas (decididas em 31/10/2026, ver `decisoes.md`): escopo = presidente, governadores, deputados federais e
+senadores, **atuais e eleitos em 2026** (cerca de 620 cargos; a união das duas listas fica um pouco maior porque
+parte dos eleitos é nova). Deputados estaduais só depois do MVP. IA com revisão humana. Processos com fontes
+oficiais + curadoria. Custo zero de infraestrutura.
 
 Durações estimadas para uma pessoa em meio período. Servem para ordenar o trabalho, não são prazo.
 
@@ -11,7 +13,7 @@ Durações estimadas para uma pessoa em meio período. Servem para ordenar o tra
 
 Objetivo: ter certeza de que as fontes entregam o que o mapa promete, antes de construir em cima delas.
 
-- [ ] Fechar as decisões de escopo em `decisoes.md`
+- [x] Fechar as decisões de escopo em `decisoes.md` (D1–D4 decididas; D5–D6 pendentes)
 - [ ] Criar o repositório no GitHub e liberar os domínios da seção 8 de `fontes-de-dados.md` no ambiente
 - [ ] Script de sondagem: chamar cada fonte, salvar uma amostra da resposta, registrar campos, tempo e limites
 - [ ] **Testes críticos:**
@@ -20,7 +22,7 @@ Objetivo: ter certeza de que as fontes entregam o que o mapa promete, antes de c
   - [ ] Senado: quais rotas devolvem headers `Deprecation`/`Sunset`
   - [ ] TSE: `consulta_cand_2026` e `bem_candidato_2026` já publicados com eleitos marcados?
   - [ ] TCU: existe exportação da lista de contas irregulares ou só consulta web?
-- [ ] **Cadastro mestre de pessoas:** um ID interno por político, ligado aos IDs da Câmara, do Senado, do TSE (por
+- [ ] **Cadastro mestre de pessoas** (atuais + eleitos em 2026): um ID interno por político, ligado aos IDs da Câmara, do Senado, do TSE (por
   eleição) e do Wikidata. É a base de tudo, porque cada fonte escreve o nome de um jeito.
 - [ ] Modelo de dados v1 (ver `arquitetura.md`)
 
@@ -74,16 +76,14 @@ O bloco mais sensível. Só vai ao ar com regra editorial definida e revisão hu
 - [ ] Cadastro de "temas do período" (ex.: Fim da 6x1, Proibição das bets) com palavras-chave e votações ligadas
 - [ ] Coleta de discursos (Câmara/Senado) e notícias (GDELT + RSS das agências oficiais)
 - [ ] Classificação de posição por tema (a favor / contra / ambíguo / sem manifestação), com trecho citado e link
-  - Com IA (resumo e classificação) **se aprovado**, sempre com revisão e o aviso "resumo gerado por IA"
-  - Sem IA: só votos + trechos de discurso achados por palavra-chave
+  - IA faz resumo e classificação; uma pessoa revisa antes de publicar; o PDF mostra o aviso "resumo gerado por IA"
 - [ ] Bloco "Temas do momento" no topo do PDF
 
 ---
 
 ## Fase 5: Escala e evolução (contínuo)
 
-- [ ] Deputados estaduais: começar pelas assembleias com API (SAPL e casas maiores) — **se entrar no escopo**
-- [ ] Transição de mandato: perfis dos eleitos em 2026 que ainda não têm mandato (posse em jan/fev de 2027)
+- [ ] Deputados estaduais: começar pelas assembleias com API (SAPL e casas maiores)
 - [ ] Histórico de versões do PDF (o que mudou e quando)
 - [ ] API pública própria com os dados consolidados
 - [ ] Alertas por e-mail quando um político acompanhado vota ou ganha um processo novo
