@@ -101,6 +101,21 @@ financiamento   pessoa_id, ano_eleicao, total_recebido, principais_doadores[]
 
 O QR code leva para a página online, que tem todos os links das fontes (no PDF não cabem).
 
+### Rascunho v1 (implementado em 01/11/2026)
+
+`uv run puxa ficha <id>` gera `dados/site/html/<id>.html` e `dados/site/pdf/<id>.pdf`. Conteúdo: foto, nome,
+cargos, temas do momento, votações-chave e produção legislativa. Patrimônio, processos e declarações entram nas
+próximas versões. Escolhas da v1:
+- Cores dos votos neutras (azul para Sim, terracota para Não), sem verde e vermelho, para não sugerir certo ou errado.
+  O voto também aparece por escrito, então a cor não é a única pista.
+- "Sem registro" na Câmara = ausente ou sem mandato na data. A ficha não afirma o motivo.
+- Nome civil só quando vem do TSE, que respeita o nome social. O nome de registro da Câmara não aparece.
+- Nomes do TSE em maiúsculas são formatados ("TARCÍSIO" → "Tarcísio"); siglas sem vogal ficam ("JHC").
+- Se o conteúdo não couber em uma página, a ficha usa uma versão compacta. As 862 fichas couberam.
+- Fonte Inter. Na imagem de produção, instalar a fonte e o Chromium (`playwright install chromium`). Neste ambiente,
+  o pipeline usa o Chromium pré-instalado (variável `PUXA_CHROMIUM` para apontar outro).
+- Fotos embutidas no PDF (média de 180 KB por ficha). Reduzir a resolução das fotos é uma otimização pendente.
+
 ## Estrutura de pastas (quando o código começar)
 
 ```

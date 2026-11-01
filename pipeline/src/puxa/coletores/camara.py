@@ -41,6 +41,7 @@ def fichas_em_lote(cli: Cliente, pasta: Path = BRUTO / "camara") -> dict[int, di
                 "nomeCivil": linha["nomeCivil"],
                 "cpf": linha["cpf"] or None,
                 "dataNascimento": linha["dataNascimento"] or None,
+                "sexo": linha["siglaSexo"] or None,
             }
     return fichas
 

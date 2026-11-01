@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>{{ nome }} · puxa-capivara</title>
+<style>
+  @page { size: A4; margin: 0; }
+  :root {
+    --tinta: #1b1f24;
+    --suave: #5b6470;
+    --linha: #dde1e6;
+    --fundo: #f3f4f6;
+    --sim: #1f4e8c;
+    --nao: #a8502b;
+    --meio: #e8dcbc;
+    --marca: #7a5230;
+  }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: Inter, "Helvetica Neue", Arial, sans-serif;
+    color: var(--tinta);
+    font-size: 9pt;
+    line-height: 1.35;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .pagina {
+    width: 210mm; height: 297mm; box-sizing: border-box;
+    padding: 11mm 13mm 9mm;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .topo {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 2px solid var(--tinta); padding-bottom: 1.8mm;
+    font-size: 7.5pt; color: var(--suave);
+  }
+  .marca { font-size: 11pt; font-weight: 800; color: var(--marca); letter-spacing: -0.01em; }
+  .marca span { color: var(--suave); font-weight: 500; font-size: 7.5pt; margin-left: 2mm; letter-spacing: 0; }
+
+  .identidade { display: flex; gap: 6mm; margin-top: 5mm; align-items: flex-start; }
+  .foto { width: 30mm; height: 40mm; object-fit: cover; object-position: top; border-radius: 2mm; flex: none; background: var(--fundo); }
+  .foto.vazia { display: flex; align-items: center; justify-content: center; font-size: 22pt; font-weight: 700; color: var(--suave); }
+  h1 { font-size: 25pt; line-height: 1.05; margin: 1mm 0 1.2mm; font-weight: 800; letter-spacing: -0.015em; }
+  .nome-civil { color: var(--suave); font-size: 8.2pt; margin-bottom: 2.5mm; }
+  .cargos { margin: 0; padding: 0; list-style: none; }
+  .cargos li { font-size: 9.6pt; margin-bottom: 0.8mm; }
+  .cargos li:first-child { font-weight: 600; font-size: 10.4pt; }
+
+  section { margin-top: 5mm; }
+  h2 {
+    font-size: 7.6pt; text-transform: uppercase; letter-spacing: 0.09em; color: var(--suave);
+    margin: 0 0 1.8mm; padding-bottom: 1mm; border-bottom: 1px solid var(--linha); font-weight: 700;
+  }
+  .sub { color: var(--suave); font-size: 7.6pt; }
+
+  .momento { background: var(--fundo); border-radius: 2.5mm; padding: 2.8mm 4mm; }
+  .momento .item { display: flex; justify-content: space-between; align-items: center; gap: 5mm; padding: 1.2mm 0; }
+  .momento .item + .item { border-top: 1px solid var(--linha); }
+  .momento .titulo { font-weight: 700; font-size: 10.6pt; }
+
+  table.votos { width: 100%; border-collapse: collapse; }
+  table.votos td { padding: 1.5mm 0; border-bottom: 1px solid var(--linha); vertical-align: middle; }
+  table.votos .titulo { font-weight: 600; font-size: 9.2pt; }
+  td.voto { text-align: right; white-space: nowrap; width: 38mm; padding-left: 3mm; }
+  td.voto .detalhe { display: block; white-space: normal; font-size: 6.8pt; color: var(--suave); margin-top: 0.5mm; }
+
+  .chip { display: inline-block; padding: 0.5mm 2.6mm; border-radius: 10mm; font-weight: 700; font-size: 8.2pt; }
+  .chip.sim { background: var(--sim); color: #fff; }
+  .chip.nao { background: var(--nao); color: #fff; }
+  .chip.meio { background: var(--meio); color: var(--tinta); }
+  .chip.neutro { background: #e4e7eb; color: #3a4049; }
+  .chip.vazio { border: 1px solid #c3c8cf; color: var(--suave); font-weight: 600; padding: 0.3mm 2.4mm; }
+  .chip.grande { font-size: 10pt; padding: 0.8mm 3.4mm; }
+
+  .numeros { display: flex; gap: 3mm; }
+  .numero { flex: 1; background: var(--fundo); border-radius: 2.5mm; padding: 2.4mm 3.2mm; font-size: 7.8pt; color: var(--suave); }
+  .numero b { display: block; font-size: 17pt; line-height: 1.1; color: var(--tinta); }
+  .destaques { margin: 2.4mm 0 0; padding: 0; list-style: none; }
+  .destaques li { margin-bottom: 1.4mm; font-size: 8.4pt; }
+  .destaques .norma { font-weight: 600; }
+
+  .nota { font-size: 7.4pt; color: var(--suave); margin-top: 1.4mm; }
+
+  footer { margin-top: auto; border-top: 1px solid var(--linha); padding-top: 2mm; font-size: 6.8pt; color: var(--suave); line-height: 1.4; }
+  footer p { margin: 0 0 0.8mm; }
+
+  body.compacta { font-size: 8.3pt; }
+  body.compacta section { margin-top: 3.4mm; }
+  body.compacta table.votos td { padding: 1mm 0; }
+  body.compacta h1 { font-size: 21pt; }
+  body.compacta .foto { width: 26mm; height: 34.5mm; }
+</style>
+</head>
+<body>
+<div class="pagina">
+
+  <div class="topo">
+    <div class="marca">puxa-capivara <span>Ficha pública · rascunho {{ versao }}</span></div>
+    <div>Gerada em {{ gerado_em }}</div>
+  </div>
+
+  <div class="identidade">
+    {% if foto %}
+      <img class="foto" src="{{ foto }}" alt="Foto de {{ nome }}">
+    {% else %}
+      <div class="foto vazia" aria-label="Sem foto">{{ iniciais }}</div>
+    {% endif %}
+    <div>
+      <h1>{{ nome }}</h1>
+      {% if nome_civil and nome_civil|lower != nome|lower %}<div class="nome-civil">Nome civil: {{ nome_civil }}</div>{% endif %}
+      <ul class="cargos">
+        {% for linha in cargos %}<li>{{ linha }}</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <section>
+    <h2>Temas do momento</h2>
+    <div class="momento">
+      {% for v in temas_do_momento %}
+      <div class="item">
+        <div>
+          <div class="titulo">{{ v.titulo }}</div>
+          <div class="sub">{{ v.casa }}{% if v.data %}, {{ v.data }}{% endif %} · Sim = {{ v.significado_sim }}{% if v.desfecho %} · Resultado: {{ v.desfecho }}{% endif %}</div>
+        </div>
+        <div style="text-align:right">
+          <span class="chip grande {{ v.classe }}">{{ v.voto }}</span>
+          {% if v.detalhe %}<div class="sub">{{ v.detalhe }}</div>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+      {% if not tem_congresso %}
+      <div class="item">
+        <div>
+          <div class="titulo">Fim da escala 6x1</div>
+          <div class="sub">Sem mandato atual no Congresso. Votos de mandatos anteriores entram nas próximas versões.</div>
+        </div>
+        <div><span class="chip vazio">Não se aplica</span></div>
+      </div>
+      {% endif %}
+      <div class="item">
+        <div>
+          <div class="titulo">Proibição das bets</div>
+          <div class="sub">Ainda sem votação nominal no Congresso. Declarações sobre o tema entram na próxima versão.</div>
+        </div>
+        <div><span class="chip vazio">Em levantamento</span></div>
+      </div>
+    </div>
+  </section>
+
+  {% if votacoes %}
+  <section>
+    <h2>Votações-chave da legislatura 2023–2027</h2>
+    <table class="votos">
+      {% for v in votacoes %}
+      <tr>
+        <td>
+          <div class="titulo">{{ v.titulo }}</div>
+          <div class="sub">Sim = {{ v.significado_sim }} · {{ v.casa }}{% if v.data %}, {{ v.data }}{% endif %}{% if v.desfecho %} · Resultado: {{ v.desfecho }}{% endif %}</div>
+        </td>
+        <td class="voto">
+          <span class="chip {{ v.classe }}">{{ v.voto }}</span>
+          {% if v.detalhe %}<span class="detalhe">{{ v.detalhe }}</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    <div class="nota">"Sem registro": ausente ou sem mandato na data da votação. Votos de plenário; quando houve dois turnos, vale o 1º.</div>
+  </section>
+  {% endif %}
+
+  {% if producao %}
+  <section>
+    <h2>Produção legislativa ({{ producao.casa }}, desde {{ producao.desde }})</h2>
+    <div class="numeros">
+      <div class="numero"><b>{{ producao.primeiro_autor }}</b>projetos como primeiro autor</div>
+      <div class="numero"><b>{{ producao.total }}</b>projetos contando coautorias</div>
+      <div class="numero"><b>{{ producao.viraram_norma }}</b>viraram lei ou norma, como primeiro autor</div>
+    </div>
+    {% if producao.destaques %}
+    <ul class="destaques">
+      {% for d in producao.destaques %}
+      <li><span class="norma">{{ d.identificacao }}{% if d.norma %} → {{ d.norma }}{% endif %}</span>: {{ d.ementa }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <div class="nota">Conta projetos de lei, de lei complementar, de decreto legislativo, de resolução e PECs. Assinaturas de apoio a PEC não contam como autoria.</div>
+  </section>
+  {% elif not tem_congresso %}
+  <section>
+    <h2>Atuação</h2>
+    <div class="nota" style="font-size:8.6pt">Sem mandato atual no Congresso. Mandatos anteriores, patrimônio declarado, financiamento de campanha e atos de governo entram nas próximas versões.</div>
+  </section>
+  {% endif %}
+
+  <footer>
+    <p><b>Fontes:</b> Câmara dos Deputados, Senado Federal e Tribunal Superior Eleitoral (dados abertos).{% if fonte_foto %} Foto: {{ fonte_foto }}.{% endif %}</p>
+    <p><b>Rascunho {{ versao }}:</b> os dados estão em validação e podem conter erros. Próximas versões: patrimônio declarado, financiamento de campanha, processos e investigações, e declarações sobre os temas do momento.</p>
+  </footer>
+
+</div>
+</body>
+</html>

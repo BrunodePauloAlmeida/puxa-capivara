@@ -10,13 +10,13 @@ e o que ele disse sobre os temas do momento.
 
 ## Status
 
-Fase 0: fontes validadas ao vivo ([relatório](docs/validacao-fontes.md)) e primeira versão do pipeline (`pipeline/`),
-que monta o cadastro mestre de políticos.
+Fase 1 em andamento: cadastro mestre, votações-chave, produção legislativa e a ficha em PDF (rascunho v1) para as
+862 pessoas do cadastro. Fontes validadas ao vivo ([relatório](docs/validacao-fontes.md)).
 
 ## Documentação
 
 - [Mapa de fontes de dados](docs/fontes-de-dados.md): APIs públicas gratuitas, o que cada uma entrega e limitações
-- [Roadmap até 2030](docs/roadmap.md): seis fases, da ficha v2 às eleições municipais de 2028 e gerais de 2030
+- [Roadmap](docs/roadmap.md): tudo construído até 31/12/2026, em quatro sprints; depois, operação nas eleições de 2028 e 2030
 - [Arquitetura](docs/arquitetura.md): stack, modelo de dados e layout do PDF
 - [Validação das fontes](docs/validacao-fontes.md): resultado dos testes ao vivo de cada fonte
 - [Decisões](docs/decisoes.md): escolhas de escopo e editoriais
@@ -32,6 +32,8 @@ uv run pytest -q          # testes (sem rede)
 uv run puxa cadastro      # monta o cadastro mestre em dados/processado/cadastro/
 uv run puxa votacoes      # votos das votações-chave (curadoria/votacoes_chave.yaml)
 uv run puxa producao      # projetos apresentados e que viraram norma, desde 2019
+uv run puxa fotos         # fotos oficiais (Câmara, Senado ou TSE)
+uv run puxa ficha erika-hilton lula   # ficha de uma página em dados/site/pdf/ (ou --todos)
 ```
 
 Os dados baixados e gerados ficam em `dados/` (fora do Git). Correções manuais ficam em `curadoria/`.
