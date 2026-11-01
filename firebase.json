@@ -1,0 +1,12 @@
+{
+  "hosting": {
+    "public": "infra/firebase/public",
+    "ignore": ["**/.*"],
+    "rewrites": [
+      {
+        "source": "**",
+        "run": { "serviceId": "puxa-capivara-site", "region": "southamerica-east1" }
+      }
+    ]
+  }
+}
