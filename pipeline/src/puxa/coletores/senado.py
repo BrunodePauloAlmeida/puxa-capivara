@@ -32,8 +32,9 @@ def senadores_em_exercicio(cli: Cliente) -> list[dict]:
                 "nome_completo": ident["NomeCompletoParlamentar"],
                 "partido": ident.get("SiglaPartidoParlamentar"),
                 "uf": ident.get("UfParlamentar"),
-                "foto": ident.get("UrlFotoParlamentar"),
+                "foto": (ident.get("UrlFotoParlamentar") or "").replace("http://", "https://") or None,
                 "participacao": mandato.get("DescricaoParticipacao"),  # Titular / 1º Suplente ...
+                "sexo": ident.get("SexoParlamentar"),
             }
         )
     return resultado

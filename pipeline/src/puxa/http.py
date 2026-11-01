@@ -85,7 +85,8 @@ class Cliente:
         destino.parent.mkdir(parents=True, exist_ok=True)
         meta_path = destino.with_name(destino.name + ".meta.json")
         self._esperar()
-        cabecalho = self._http.head(url)
+        aceita_tudo = {"Accept": "*/*"}  # servidores de imagem recusam Accept: application/json (406)
+        cabecalho = self._http.head(url, headers=aceita_tudo)
         cabecalho.raise_for_status()
         meta = {
             "url": url,
@@ -97,7 +98,7 @@ class Cliente:
             return destino
         log.info("Baixando %s", url)
         temporario = destino.with_name(destino.name + ".parcial")
-        with self._http.stream("GET", url) as resposta:
+        with self._http.stream("GET", url, headers=aceita_tudo) as resposta:
             resposta.raise_for_status()
             with temporario.open("wb") as f:
                 for bloco in resposta.iter_bytes(1 << 20):

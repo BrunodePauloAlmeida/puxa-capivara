@@ -43,3 +43,22 @@ def slugify(texto: str) -> str:
     base = sem_acento(texto).lower()
     base = re.sub(r"[^a-z0-9]+", "-", base)
     return base.strip("-")
+
+
+_VOGAIS = set("AEIOUÁÉÍÓÚÂÊÔÃÕÀÜ")
+
+
+def nome_exibicao(nome: str | None) -> str:
+    """Nomes em maiúsculas (padrão do TSE) viram 'Tarcísio Gomes de Freitas'. Siglas sem vogal ('JHC') e nomes
+    que já vêm com maiúsculas e minúsculas ('Hugo Motta') ficam como estão."""
+    if not nome or nome != nome.upper():
+        return nome or ""
+    palavras = []
+    for i, palavra in enumerate(nome.split()):
+        if not set(palavra) & _VOGAIS:
+            palavras.append(palavra)
+        elif i > 0 and palavra in _PARTICULAS:
+            palavras.append(palavra.lower())
+        else:
+            palavras.append("-".join(p[:1] + p[1:].lower() for p in palavra.split("-")))
+    return " ".join(palavras)

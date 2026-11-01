@@ -1,14 +1,15 @@
 """Linha de comando do pipeline: `uv run puxa cadastro`."""
 
 import argparse
+import json
 import logging
 import sys
 
 import polars as pl
 
-from puxa import cadastro, producao, votacoes
+from puxa import cadastro, ficha, fotos, producao, votacoes
 from puxa.coletores import camara, senado, tse
-from puxa.config import CURADORIA, PROCESSADO
+from puxa.config import CURADORIA, DADOS, PROCESSADO
 from puxa.http import Cliente
 
 log = logging.getLogger("puxa")
@@ -92,6 +93,44 @@ def cmd_producao(_: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_fotos(_: argparse.Namespace) -> int:
+    pessoas = _pessoas()
+    with Cliente(intervalo=0.1) as cli:
+        manifesto = fotos.baixar_fotos(cli, pessoas)
+    sem_foto = sorted(set(pessoas["id"]) - set(manifesto))
+    print(f"Fotos: {len(manifesto)} de {pessoas.height} pessoas. Sem foto: {len(sem_foto)} {sem_foto[:10]}")
+    return 0
+
+
+def cmd_ficha(args: argparse.Namespace) -> int:
+    dados = ficha.Dados.carregar()
+    ids = dados.pessoas["id"].to_list() if args.todos else args.ids
+    if not ids:
+        raise SystemExit("Informe os IDs (ex.: uv run puxa ficha erika-hilton lula) ou use --todos")
+    desconhecidos = sorted(set(ids) - set(dados.pessoas["id"]))
+    if desconhecidos:
+        raise SystemExit(f"IDs fora do cadastro: {desconhecidos}")
+    manifesto_path = fotos.pasta_fotos() / "manifesto.json"
+    manifesto = json.loads(manifesto_path.read_text()) if manifesto_path.exists() else {}
+
+    pasta_html, pasta_pdf = DADOS / "site" / "html", DADOS / "site" / "pdf"
+    pasta_html.mkdir(parents=True, exist_ok=True)
+    paginas = []
+    for pessoa_id in ids:
+        conteudo = ficha.html(ficha.contexto(pessoa_id, dados, manifesto_fotos=manifesto))
+        (pasta_html / f"{pessoa_id}.html").write_text(conteudo, encoding="utf-8")
+        paginas.append((pessoa_id, conteudo))
+    if args.sem_pdf:
+        print(f"{len(paginas)} fichas em HTML em {pasta_html}")
+        return 0
+    nao_couberam = ficha.gerar_pdfs(paginas, pasta_pdf)
+    print(
+        f"{len(paginas)} PDFs em {pasta_pdf}"
+        + (f"; não couberam em uma página: {nao_couberam}" if nao_couberam else "")
+    )
+    return 1 if nao_couberam else 0
+
+
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     parser = argparse.ArgumentParser(prog="puxa")
@@ -99,6 +138,12 @@ def main() -> None:
     sub.add_parser("cadastro", help="Monta o cadastro mestre de políticos").set_defaults(func=cmd_cadastro)
     sub.add_parser("votacoes", help="Coleta os votos das votações-chave").set_defaults(func=cmd_votacoes)
     sub.add_parser("producao", help="Coleta a produção legislativa").set_defaults(func=cmd_producao)
+    sub.add_parser("fotos", help="Baixa as fotos oficiais").set_defaults(func=cmd_fotos)
+    p_ficha = sub.add_parser("ficha", help="Gera a ficha de uma página (HTML e PDF)")
+    p_ficha.add_argument("ids", nargs="*", help="IDs do cadastro (ex.: erika-hilton)")
+    p_ficha.add_argument("--todos", action="store_true", help="Gera para todas as pessoas do cadastro")
+    p_ficha.add_argument("--sem-pdf", action="store_true", help="Só o HTML")
+    p_ficha.set_defaults(func=cmd_ficha)
     args = parser.parse_args()
     sys.exit(args.func(args))
 
