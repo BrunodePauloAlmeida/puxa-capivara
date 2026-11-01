@@ -39,9 +39,9 @@ Observa Custódia faz o mesmo depois de cada deploy do frontend).
 | Dados de apoio | **BigQuery** (opcional) | Consultar as tabelas públicas da Base dos Dados (Câmara, Senado, TSE) no mesmo projeto, para carregar o histórico. Grátis até 1 TB de consulta por mês |
 | Frontend | **Next.js** (`output: "standalone"`) em Docker no **Cloud Run** | Página por político, busca, página de metodologia. Lê os JSON do bucket com cache |
 | Domínio e CDN | **Firebase Hosting** repassando tudo para o Cloud Run | O Cloud Run não aceita domínio próprio em `southamerica-east1` |
-| PDFs | Gerados no pipeline com **Playwright (Chromium)** a partir do mesmo HTML/CSS da página; servidos do Cloud Storage | Pré-gerados: o download é instantâneo e não pesa no Cloud Run |
+| PDFs | Gerados no pipeline com **Playwright (Chromium)** a partir do mesmo HTML/CSS da página; guardados no Cloud Storage | Pré-gerados: o site só repassa o arquivo (bucket privado) e a CDN do Firebase guarda a resposta |
 | Backend | **FastAPI** no **Cloud Run**, com limite de requisições (slowapi) e envio de e-mail | Só para o formulário de correção e direito de resposta no MVP. Depois, painel de curadoria |
-| Busca | **MiniSearch** no navegador | Índice pequeno (cerca de 1 mil nomes), gerado pelo pipeline |
+| Busca | Rota `/api/busca` do Next.js, com o índice em memória | Índice gerado pelo pipeline (`indice.json`, 862 nomes na v1). No servidor para continuar viável com as ~485 mil candidaturas do TSE |
 | CI/CD | **GitHub Actions** + **Workload Identity Federation** + **Artifact Registry** | Testes antes do deploy: pytest, Vitest, Playwright (fumaça e acessibilidade) |
 | Segredos | **Bitwarden Secrets Manager** (`bws`) | Chave da API do Portal da Transparência, chave do DataJud, chave da API do Claude, SMTP. Viram variáveis de ambiente do Cloud Run a cada deploy |
 | IA | API do Claude, modelo pequeno, só para itens novos | Resumir discursos e notícias por tema; tudo passa por revisão antes de publicar |
@@ -116,7 +116,18 @@ próximas versões. Escolhas da v1:
   o pipeline usa o Chromium pré-instalado (variável `PUXA_CHROMIUM` para apontar outro).
 - Fotos embutidas no PDF (média de 180 KB por ficha). Reduzir a resolução das fotos é uma otimização pendente.
 
-## Estrutura de pastas (quando o código começar)
+## Site v1 (01/11/2026)
+
+- `site/`: Next.js 16, App Router, `output: "standalone"`. Três telas: busca (nome + foto), ficha da pessoa e
+  download do PDF. Sem banco: lê os arquivos que `uv run puxa site` gera em `dados/site/web/`.
+- Rotas: `/` (busca, funciona também sem JavaScript via `?q=`), `/ficha/{id}`, `/ficha/{id}/pdf`, `/foto/{id}`,
+  `/api/busca?q=`.
+- Dados: em produção vêm do bucket `{projeto}-dados/web/`, lidos com o token da conta de serviço do Cloud Run
+  (bucket privado); no desenvolvimento, da pasta local. Cache em memória de 10 minutos.
+- Fora dos buscadores (`noindex`) enquanto os dados estiverem em validação.
+- Passo a passo do GCP pelo console: [deploy.md](deploy.md).
+
+## Estrutura de pastas
 
 ```
 puxa-capivara/
@@ -126,10 +137,11 @@ puxa-capivara/
 │   ├── gerar/           # JSON por político, índice de busca, PDFs
 │   └── Dockerfile
 ├── curadoria/           # YAML revisado por humanos: votações-chave, temas, processos
-├── frontend/            # Next.js (standalone) + Dockerfile
+├── site/                # Next.js (standalone) + Dockerfile
 ├── backend/             # FastAPI: formulário de correção + Dockerfile
 ├── firebase.json        # Firebase Hosting → Cloud Run
 ├── scripts/             # get-secrets.sh (Bitwarden → .env local)
-├── .github/workflows/   # deploy-frontend.yml, deploy-backend.yml, deploy-pipeline.yml
+├── infra/firebase/      # pasta pública mínima do Firebase Hosting
+├── .github/workflows/   # ci.yml, deploy-site.yml, publicar-dados.yml (depois: deploy-backend, deploy-pipeline)
 └── docs/
 ```

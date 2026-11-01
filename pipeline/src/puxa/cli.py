@@ -7,7 +7,7 @@ import sys
 
 import polars as pl
 
-from puxa import cadastro, ficha, fotos, producao, votacoes
+from puxa import cadastro, ficha, fotos, producao, votacoes, web
 from puxa.coletores import camara, senado, tse
 from puxa.config import CURADORIA, DADOS, PROCESSADO
 from puxa.http import Cliente
@@ -131,6 +131,21 @@ def cmd_ficha(args: argparse.Namespace) -> int:
     return 1 if nao_couberam else 0
 
 
+def cmd_site(_: argparse.Namespace) -> int:
+    dados = ficha.Dados.carregar()
+    manifesto_path = fotos.pasta_fotos() / "manifesto.json"
+    manifesto = json.loads(manifesto_path.read_text()) if manifesto_path.exists() else {}
+    destino = DADOS / "site" / "web"
+    meta = web.exportar(
+        dados, fotos.pasta_fotos(), DADOS / "site" / "pdf", destino, manifesto_fotos=manifesto
+    )
+    print(
+        f"{meta['pessoas']} pessoas ({meta['com_foto']} com foto) em {destino}"
+        + (f"; sem PDF: {len(meta['sem_pdf'])}" if meta["sem_pdf"] else "")
+    )
+    return 0
+
+
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     parser = argparse.ArgumentParser(prog="puxa")
@@ -144,6 +159,9 @@ def main() -> None:
     p_ficha.add_argument("--todos", action="store_true", help="Gera para todas as pessoas do cadastro")
     p_ficha.add_argument("--sem-pdf", action="store_true", help="Só o HTML")
     p_ficha.set_defaults(func=cmd_ficha)
+    sub.add_parser(
+        "site", help="Exporta os dados do site (índice, fichas em JSON, fotos, PDFs)"
+    ).set_defaults(func=cmd_site)
     args = parser.parse_args()
     sys.exit(args.func(args))
 
