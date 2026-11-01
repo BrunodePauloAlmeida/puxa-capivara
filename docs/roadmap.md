@@ -1,116 +1,101 @@
-# Roadmap
+# Roadmap até 2030
 
-Premissas (decididas em 31/10/2026, ver `decisoes.md`): escopo = presidente, governadores, deputados federais e
-senadores, **atuais e eleitos em 2026** (cerca de 620 cargos; a união das duas listas fica um pouco maior porque
-parte dos eleitos é nova). Deputados estaduais só depois do MVP. IA com revisão humana. Processos com fontes
-oficiais + curadoria. Hospedagem no Google Cloud no padrão do Observa Custódia (custo perto de zero).
+Atualizado em 01/11/2026. Seis fases levam o projeto dos 862 políticos de hoje (presidente, governadores, senadores e
+deputados federais, em exercício e eleitos em 2026) a todos os candidatos do país. O calendário eleitoral é o prazo
+fixo: registro de candidaturas em 15/08/2028, 1º turno municipal em 01/10/2028 e 1º turno geral em 06/10/2030.
 
-Durações estimadas para uma pessoa em meio período. Servem para ordenar o trabalho, não são prazo.
+A versão para patrocinadores, com custos, equipe, governança e riscos, é mantida em documento à parte.
 
----
+## Já entregue (Fase 0 e início da Fase 1)
 
-## Fase 0: Fundação e validação das fontes (1–2 semanas)
+- [x] Fontes validadas ao vivo (`validacao-fontes.md`)
+- [x] Cadastro mestre com 862 pessoas (`puxa cadastro`)
+- [x] Votações-chave: 8 temas, 19 votações nominais (`puxa votacoes`)
+- [x] Produção legislativa desde 2019 (`puxa producao`)
+- [x] Fotos oficiais e ficha em PDF, rascunho v1 (`puxa fotos`, `puxa ficha`)
 
-Objetivo: ter certeza de que as fontes entregam o que o mapa promete, antes de construir em cima delas.
+## Fase 1: ficha v2 e lançamento público (nov/2026 a jan/2027)
 
-- [x] Fechar as decisões de escopo em `decisoes.md`
-- [x] Criar o repositório no GitHub
-- [x] Liberar no ambiente do Claude os domínios da seção 8 de `fontes-de-dados.md`
-- [ ] **Google Cloud** (mesmo padrão do Observa Custódia):
-  - [ ] Projeto novo com faturamento, região `southamerica-east1`
-  - [ ] Artifact Registry, buckets do Cloud Storage (`bruto`, `processado`, `site`, `pdf`)
-  - [ ] Service account do CI + Workload Identity Federation ligada a este repositório (sem chave JSON)
-  - [ ] Firebase adicionado ao projeto (Hosting) e permissão de release para o CI
-  - [ ] Projeto `puxa-capivara` no Bitwarden Secrets Manager + secret `BWS_ACCESS_TOKEN` no GitHub
-- [x] Sondagem de cada fonte ao vivo: resultado em `validacao-fontes.md`
-- [ ] **Testes críticos:**
-  - [x] `/votacoes/{id}/votos` da Câmara traz votos depois de maio/2024? **Sim**
-  - [x] Achar as votações da PEC 221/2019 (6x1) na Câmara (maio/2026) e no Senado (14/10/2026) e baixar os votos nominais
-  - [x] Senado: quais rotas devolvem headers `Deprecation`/`Sunset` (42 de 157)
-  - [x] TSE: `consulta_cand_2026` e `bem_candidato_2026` já publicados com eleitos marcados? **Sim**
-  - [ ] TCU: existe exportação em CSV, mas o firewall bloqueou; repetir do GCP
-- [ ] **Cadastro mestre de pessoas** (atuais + eleitos em 2026): um ID interno por político, ligado aos IDs da Câmara, do Senado, do TSE (por
-  eleição) e do Wikidata. É a base de tudo, porque cada fonte escreve o nome de um jeito.
-- [ ] Modelo de dados v1 (ver `arquitetura.md`)
-- [ ] Testar Portal da Transparência (chave no Bitwarden), TCU e GDELT a partir do GCP
+- [ ] Ficha v2: um resumo de verdade, lido em 30 segundos (princípios abaixo), testada com 10 eleitores
+- [ ] Patrimônio, doadores e trajetória do TSE para as 862 pessoas
+- [ ] Presença, alinhamento ao partido e ao governo, cota parlamentar e emendas
+- [ ] Projeto no Google Cloud, site público com busca, página por pessoa, PDF e imagem para celular
+- [ ] Atualização diária automática e troca de mandato nas posses (05/01, 06/01 e 01/02/2027)
+- [ ] Conferência dos 27 governadores em exercício; revisão dos resumos das votações-chave
+- [ ] Teste do TCU e do GDELT a partir do Google Cloud
 
-**Entrega:** relatório de validação + cadastro mestre com os ~620 nomes ligados às fontes.
+**Pronto quando:** o site estiver no ar com as 862 fichas v2 antes da posse do Congresso (01/02/2027).
 
----
+### Princípios da ficha v2
+1. No máximo cerca de 120 palavras na página, além dos nomes.
+2. Fato = número + rótulo curto; explicação, data e fonte vão para o site.
+3. Cinco blocos fixos, na mesma ordem para qualquer cargo: quem é; em 30 segundos (quatro indicadores); como votou ou
+   o que entregou; temas do momento; trajetória e dinheiro.
+4. Bloco sem dado não aparece.
+5. Votos em grade de ícones, com uma legenda só.
+6. Rodapé de uma linha com fontes, data e QR code para a página oficial (verificação da ficha).
+7. Dois formatos: A4 e imagem vertical para aplicativos de mensagem.
 
-## Fase 1: MVP com Congresso (3–4 semanas)
+## Fase 2: gestão do presidente e dos governadores (fev a abr/2027)
 
-Objetivo: site no ar com busca e PDF para **deputados federais e senadores**, só com dados objetivos.
+- [ ] Contas: despesa com pessoal, dívida, investimento e resultado, início e fim do mandato (Tesouro, SICONFI), e
+      parecer do tribunal de contas
+- [ ] Resultados: educação, saúde, segurança, emprego e renda, início e fim do mandato, ao lado da média nacional
+      (IBGE, INEP, DATASUS, Banco Central)
+- [ ] Promessas e entregas: plano de governo do TSE resumido por IA com revisão humana
+- [ ] Atos: medidas provisórias, vetos, leis e taxa de aprovação dos projetos do governo (presidente); leis e vetos
+      onde a assembleia publica dados (governadores)
+- [ ] Mandatos anteriores de todos (votos e projetos de legislaturas passadas)
+- [ ] Página pública de metodologia
 
-- [ ] Coletores: Câmara (deputados, proposições, autorias, votações, votos, discursos) e Senado (idem)
-- [x] Lista curada de **votações-chave** da legislatura 2023–2026, incluindo a PEC da 6x1 (`curadoria/votacoes_chave.yaml`)
-- [x] Coleta dos votos das votações-chave nas duas Casas (`puxa votacoes`)
-- [x] Produção legislativa: projetos apresentados e que viraram norma (`puxa producao`)
-- [ ] Indicadores: projetos apresentados, projetos que viraram lei, presença, alinhamento com o partido e com o governo
-- [ ] Blocos do TSE: patrimônio declarado (2018 → 2022 → 2026) e principais doadores
-- [ ] Template do PDF de uma página (HTML/CSS → PDF) + página web equivalente
-- [ ] Busca por nome (com e sem acento, nome de urna e nome civil)
-- [ ] Página de **metodologia e fontes** (como cada número é calculado)
-- [ ] Pipeline como Cloud Run Job acionado diariamente pelo Cloud Scheduler
-- [ ] Frontend Next.js no Cloud Run + Firebase Hosting; backend FastAPI com o formulário de correção
-- [ ] Workflows de deploy no GitHub Actions com testes antes (pytest, Vitest, Playwright)
+**Pronto quando:** as 28 fichas executivas tiverem as quatro lentes, revisadas por um editor.
 
-**Entrega:** site público com cerca de 594 perfis de parlamentares e PDF para download.
+## Fase 3: processos, investigações e declarações (mai a jul/2027)
 
----
+- [ ] Coletores oficiais: certidões criminais do TSE, TCU, CGU (chave no Bitwarden), conselhos de ética
+- [ ] Fila de curadoria para STF e STJ; andamento pelo DataJud
+- [ ] Discursos e notícias por tema, resumo por IA com revisão; temas do momento configuráveis
+- [ ] Canal de correção e direito de resposta (até 48 h); conselho editorial
 
-## Fase 2: Executivo (2 semanas)
+**Pronto quando:** o bloco de processos estiver publicado para as 862 pessoas, com 100% dos itens revisados e parecer
+jurídico favorável.
 
-- [ ] **Presidente:** MPs editadas, projetos enviados, vetos (e se foram derrubados), leis sancionadas, histórico
-  de mandatos, dados do TSE
-- [ ] **Governadores:** dados do TSE (patrimônio, doadores, resultado), mandatos anteriores (Câmara/Senado/TSE),
-  bloco de temas preenchido por curadoria
-- [ ] Ajustar o template do PDF para cargos executivos (sem "votos", com "atos de governo")
+## Fase 4: municípios, prefeitos e vereadores (ago/2027 a mar/2028)
 
----
+- [ ] Base do TSE de 2024 para os 5.541 prefeitos e 58.174 vereadores eleitos
+- [ ] Gestão dos prefeitos: contas (SICONFI), indicadores do município, parecer do TCE, diários oficiais (Querido Diário)
+- [ ] Câmaras municipais: conector para o SAPL (Interlegis) e para capitais com dados abertos
+- [ ] Escala: coleta em paralelo por UF (Cloud Run Jobs), BigQuery para bases grandes, busca no servidor, PDF sob
+      demanda com cache
 
-## Fase 3: Processos e investigações (3–4 semanas)
+**Pronto quando:** todos os prefeitos e vereadores eleitos em 2024 tiverem ficha, com votos e projetos onde a câmara
+publica dados.
 
-O bloco mais sensível. Só vai ao ar com regra editorial definida e revisão humana.
+## Fase 5: eleições municipais de 2028 (abr a dez/2028)
 
-- [ ] Coletores automáticos: TSE (situação da candidatura, cassações), CGU (CEIS/CNEP/CEAF), Conselho de Ética
-  (representações), TCU (contas irregulares)
-- [ ] Extração das certidões criminais do TSE (PDF → texto → lista de processos)
-- [ ] Fila de curadoria: itens vindos de notícias e buscas manuais no STF/STJ entram como "pendente" e só são
-  publicados depois de alguém confirmar número do processo, tribunal e status
-- [ ] Acompanhamento de andamento pelo DataJud (para processos com número conhecido)
-- [ ] Canal de **correção e direito de resposta** + registro público de alterações
+- [ ] Ensaio geral até junho com as 463.681 candidaturas de 2024
+- [ ] Ingestão dos registros a partir de 15/08/2028 (a cada hora no período de registro); ficha em até 48 h
+- [ ] Capacidade para o pico entre 16/08 e 29/10/2028
+- [ ] Revisão jurídica eleitoral e plantão de correções na campanha
+- [ ] Eleitos de 2028 viram a base dos mandatos 2029–2032 (posse em 01/01/2029)
 
----
+**Pronto quando:** 95% dos candidatos tiverem ficha em até 48 h do registro e o site aguentar o pico sem queda.
 
-## Fase 4: Declarações e temas do momento (3 semanas)
+## Fase 6: eleições gerais de 2030 (2029 a out/2030)
 
-- [ ] Cadastro de "temas do período" (ex.: Fim da 6x1, Proibição das bets) com palavras-chave e votações ligadas
-- [ ] Coleta de discursos (Câmara/Senado) e notícias (GDELT + RSS das agências oficiais)
-- [ ] Classificação de posição por tema (a favor / contra / ambíguo / sem manifestação), com trecho citado e link
-  - IA faz resumo e classificação; uma pessoa revisa antes de publicar; o PDF mostra o aviso "resumo gerado por IA"
-- [ ] Bloco "Temas do momento" no topo do PDF
+- [ ] Deputados estaduais e distritais, começando pelas assembleias com dados abertos
+- [ ] Fichas de todos os candidatos de 2030
+- [ ] Comparador de candidatos e alertas por e-mail
 
----
-
-## Fase 5: Escala e evolução (contínuo)
-
-- [ ] Deputados estaduais: começar pelas assembleias com API (SAPL e casas maiores)
-- [ ] Histórico de versões do PDF (o que mudou e quando)
-- [ ] API pública própria com os dados consolidados
-- [ ] Alertas por e-mail quando um político acompanhado vota ou ganha um processo novo
-- [ ] Preparação para as eleições de 2028 (municipais) e 2030 (gerais)
-
----
+**Pronto quando:** 100% dos candidatos registrados em 2030 tiverem ficha antes do 1º turno (06/10/2030).
 
 ## Riscos principais
 
-| Risco | Impacto | Mitigação |
-|---|---|---|
-| Processo por calúnia ou difamação | Alto | Só fontes oficiais, status jurídico exato, revisão humana, direito de resposta |
-| Escolha das votações e temas parecer enviesada | Alto | Critério público na página de metodologia; temas de ambos os lados |
-| API muda ou sai do ar | Médio | Guardar respostas brutas, alertas de quebra, preferir arquivos em lote |
-| Votos recentes da Câmara indisponíveis pela API | Médio | Arquivos anuais `votacoesVotos` |
-| Nomes diferentes entre fontes | Médio | Cadastro mestre com IDs cruzados + revisão manual dos casos ambíguos |
-| Custo de IA ou do Google Cloud crescer | Baixo | Processar só o que é novo, modelo pequeno, cache; `min-instances=0`; alerta de orçamento no GCP |
-| Regras eleitorais em ano de eleição | Médio | Site neutro, sem impulsionamento pago, conteúdo de IA rotulado; consultar advogado eleitoral antes de 2028 |
+| Risco | Mitigação |
+|---|---|
+| Ação por calúnia ou difamação | Fonte oficial em cada fato, status jurídico exato, revisão humana, correção em até 48 h |
+| Percepção de viés | Metodologia pública, conselho plural, mesmos blocos para todos, cores neutras |
+| Dados municipais desiguais | Base do TSE igual para todos; cobertura de cada cidade informada na ficha |
+| Mudança ou queda de APIs | Cópia das respostas brutas, aviso de serviço depreciado, arquivos em lote |
+| Pico de acesso na campanha | Ensaio com 2024, CDN, PDF sob demanda com cache |
+| Fichas falsas circulando | QR code de verificação em cada PDF |

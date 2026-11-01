@@ -16,7 +16,7 @@ que monta o cadastro mestre de políticos.
 ## Documentação
 
 - [Mapa de fontes de dados](docs/fontes-de-dados.md): APIs públicas gratuitas, o que cada uma entrega e limitações
-- [Roadmap](docs/roadmap.md): fases, entregas e riscos
+- [Roadmap até 2030](docs/roadmap.md): seis fases, da ficha v2 às eleições municipais de 2028 e gerais de 2030
 - [Arquitetura](docs/arquitetura.md): stack, modelo de dados e layout do PDF
 - [Validação das fontes](docs/validacao-fontes.md): resultado dos testes ao vivo de cada fonte
 - [Decisões](docs/decisoes.md): escolhas de escopo e editoriais
