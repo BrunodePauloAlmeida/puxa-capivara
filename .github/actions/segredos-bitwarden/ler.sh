@@ -4,7 +4,7 @@
 # BWS (opcional, caminho de um bws já instalado; sem ele, baixa a CLI oficial e confere o checksum).
 set -euo pipefail
 
-: "${BWS_ACCESS_TOKEN:?falta o secret BWS_ACCESS_TOKEN no repositório (Settings > Secrets and variables > Actions)}"
+: "${BWS_ACCESS_TOKEN:?falta o secret BITWARDEN_ACCESS_TOKEN no repositório (Settings > Secrets and variables > Actions)}"
 : "${CHAVES:?nenhuma chave pedida}"
 : "${GITHUB_ENV:?rodar dentro do GitHub Actions}"
 

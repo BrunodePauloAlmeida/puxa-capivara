@@ -196,7 +196,7 @@ No GitHub, em **Settings** > **Secrets and variables** > **Actions** > **New rep
 
 | Nome | Valor |
 |---|---|
-| `BWS_ACCESS_TOKEN` | token da conta de máquina do Bitwarden |
+| `BITWARDEN_ACCESS_TOKEN` | token da conta de máquina do Bitwarden |
 
 Se a organização no Bitwarden estiver na nuvem europeia, crie também a **variável** `BWS_SERVER_URL` com o valor
 `https://vault.bitwarden.eu`.
@@ -236,7 +236,7 @@ alerta de gasto.
 
 | Sintoma | Causa provável |
 |---|---|
-| `falta o secret BWS_ACCESS_TOKEN` | Secret não cadastrado no repositório (passo 8) |
+| `falta o secret BITWARDEN_ACCESS_TOKEN` | Secret não cadastrado no repositório (passo 8) |
 | `Chaves ausentes ou repetidas no Bitwarden` | Nome da chave diferente do esperado, chave em outro projeto, ou conta de máquina sem acesso ao projeto |
 | `bws` falha com erro de autenticação | Token vencido ou revogado, ou organização na nuvem europeia sem a variável `BWS_SERVER_URL` |
 | `Permission 'iam.serviceAccounts.getAccessToken' denied` no passo de autenticação | Passo 5.4 (conceder acesso) faltando, ou condição com o nome do repositório errado |
