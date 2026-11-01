@@ -15,23 +15,24 @@ Objetivo: ter certeza de que as fontes entregam o que o mapa promete, antes de c
 
 - [x] Fechar as decisões de escopo em `decisoes.md`
 - [x] Criar o repositório no GitHub
-- [ ] Liberar no ambiente do Claude os domínios da seção 8 de `fontes-de-dados.md`
+- [x] Liberar no ambiente do Claude os domínios da seção 8 de `fontes-de-dados.md`
 - [ ] **Google Cloud** (mesmo padrão do Observa Custódia):
   - [ ] Projeto novo com faturamento, região `southamerica-east1`
   - [ ] Artifact Registry, buckets do Cloud Storage (`bruto`, `processado`, `site`, `pdf`)
   - [ ] Service account do CI + Workload Identity Federation ligada a este repositório (sem chave JSON)
   - [ ] Firebase adicionado ao projeto (Hosting) e permissão de release para o CI
   - [ ] Projeto `puxa-capivara` no Bitwarden Secrets Manager + secret `BWS_ACCESS_TOKEN` no GitHub
-- [ ] Script de sondagem: chamar cada fonte, salvar uma amostra da resposta, registrar campos, tempo e limites
+- [x] Sondagem de cada fonte ao vivo: resultado em `validacao-fontes.md`
 - [ ] **Testes críticos:**
-  - [ ] `/votacoes/{id}/votos` da Câmara traz votos depois de maio/2024? Senão, validar `votacoesVotos-2026.csv`
-  - [ ] Achar as votações da PEC 221/2019 (6x1) na Câmara (maio/2026) e no Senado (14/10/2026) e baixar os votos nominais
-  - [ ] Senado: quais rotas devolvem headers `Deprecation`/`Sunset`
-  - [ ] TSE: `consulta_cand_2026` e `bem_candidato_2026` já publicados com eleitos marcados?
-  - [ ] TCU: existe exportação da lista de contas irregulares ou só consulta web?
+  - [x] `/votacoes/{id}/votos` da Câmara traz votos depois de maio/2024? **Sim**
+  - [x] Achar as votações da PEC 221/2019 (6x1) na Câmara (maio/2026) e no Senado (14/10/2026) e baixar os votos nominais
+  - [x] Senado: quais rotas devolvem headers `Deprecation`/`Sunset` (42 de 157)
+  - [x] TSE: `consulta_cand_2026` e `bem_candidato_2026` já publicados com eleitos marcados? **Sim**
+  - [ ] TCU: existe exportação em CSV, mas o firewall bloqueou; repetir do GCP
 - [ ] **Cadastro mestre de pessoas** (atuais + eleitos em 2026): um ID interno por político, ligado aos IDs da Câmara, do Senado, do TSE (por
   eleição) e do Wikidata. É a base de tudo, porque cada fonte escreve o nome de um jeito.
 - [ ] Modelo de dados v1 (ver `arquitetura.md`)
+- [ ] Testar Portal da Transparência (chave no Bitwarden), TCU e GDELT a partir do GCP
 
 **Entrega:** relatório de validação + cadastro mestre com os ~620 nomes ligados às fontes.
 

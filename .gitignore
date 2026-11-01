@@ -1,0 +1,14 @@
+# Dados baixados e gerados (vão para o Cloud Storage, não para o Git)
+dados/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Segredos locais
+.env
+.env.*
+!.env.example

@@ -44,10 +44,11 @@ Escolher votações é um ato editorial: precisa de critério público e de tema
   GitHub Actions com Workload Identity Federation e segredos no Bitwarden. Detalhes em `arquitetura.md`.
 
 ## D7. Acessos e configuração
-- [ ] Liberar no ambiente do Claude os domínios listados em `fontes-de-dados.md`, seção 8 (hoje bloqueados)
+- [x] Liberar no ambiente do Claude os domínios listados em `fontes-de-dados.md`, seção 8
 - [x] Instalar o app do Claude no GitHub para este repositório
-- [ ] Chave gratuita da API do Portal da Transparência (CGU): o Bruno cadastra
+- [x] Chave gratuita da API do Portal da Transparência (CGU), guardada no Bitwarden como `PORTAL_TRANSPARENCIA_API_KEY`
 - [ ] Chave pública do DataJud (CNJ), publicada na wiki do DataJud (só na Fase 3)
 - [ ] Criar o projeto no Google Cloud com faturamento ativado, Firebase adicionado e Workload Identity Federation
   para o GitHub Actions (passo a passo no roadmap, Fase 0)
-- [ ] Criar o projeto `puxa-capivara` no Bitwarden Secrets Manager e o token de acesso para o CI
+- [x] Criar o projeto `puxa-capivara` no Bitwarden Secrets Manager
+- [ ] Disponibilizar o token do Bitwarden para o Claude (variável de ambiente `BITWARDEN_ACCESS_TOKEN`, vale a partir de uma sessão nova) e para o CI (secret `BWS_ACCESS_TOKEN` no GitHub)
