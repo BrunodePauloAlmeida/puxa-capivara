@@ -7,7 +7,8 @@ Como as pessoas são ligadas entre fontes, da regra mais forte para a mais fraca
   1. mesmo CPF (Câmara e TSE 2026 publicam);
   2. mesmo nome civil e mesma data de nascimento;
   3. mesma data de nascimento, nomes parecidos (Jaccard >= 0,6) e mesma UF;
-  4. mesmo nome civil e mesma UF, quando falta a data de nascimento (TSE 2018/2022 não publica mais).
+  4. mesmo nome civil e mesma UF, quando falta a data de nascimento (TSE 2018/2022 não publica mais);
+  5. mesma data de nascimento, mesmo nome de urna e mesma UF (pega nome social e nome civil abreviado).
 Dois registros com CPFs diferentes nunca são unidos; a tentativa vira pendência para revisão.
 """
 
@@ -32,13 +33,6 @@ CARGOS_TSE = {
     "GOVERNADOR": "governador",
     "SENADOR": "senador",
     "DEPUTADO FEDERAL": "deputado_federal",
-}
-# Candidaturas de 2026 usadas só para achar CPF e data de nascimento de quem tem cargo hoje.
-CARGOS_AUXILIARES_2026 = set(CARGOS_TSE) | {
-    "VICE-PRESIDENTE",
-    "VICE-GOVERNADOR",
-    "1º SUPLENTE",
-    "2º SUPLENTE",
 }
 LIMIAR_SEMELHANCA = 0.6
 
@@ -162,8 +156,9 @@ def _registro_tse(linha: dict, fonte: str, papeis: list[Papel] | None = None) ->
 
 
 def registros_tse_2026(df26: pl.DataFrame) -> list[Registro]:
-    """Eleitos em 2026 (com papel) + demais candidatos a cargos federais/estaduais (só para cruzamento)."""
-    df = tse.ultima_situacao(df26).filter(pl.col("DS_CARGO").is_in(CARGOS_AUXILIARES_2026))
+    """Eleitos em 2026 (com papel) + todos os demais candidatos, inclusive a deputado estadual, só para achar
+    CPF e data de nascimento de quem tem cargo hoje (vários deputados federais disputaram vaga estadual)."""
+    df = tse.ultima_situacao(df26)
     registros = []
     for linha in df.iter_rows(named=True):
         papeis = []
@@ -345,8 +340,13 @@ def resolver(registros: list[Registro]) -> tuple[list[list[Registro]], list[Pend
         for x, i in enumerate(indices):
             for j in indices[x + 1 :]:
                 a, b = registros[i], registros[j]
-                if _uf_compativel(a, b) and semelhanca(a.nome_civil, b.nome_civil) >= LIMIAR_SEMELHANCA:
+                if not _uf_compativel(a, b):
+                    continue
+                if semelhanca(a.nome_civil, b.nome_civil) >= LIMIAR_SEMELHANCA:
                     tentar(i, j, "nascimento+nome_parecido")
+                # 5. nascimento + nome de urna
+                elif a.nome_urna and normalizar_nome(a.nome_urna) == normalizar_nome(b.nome_urna):
+                    tentar(i, j, "nascimento+nome_urna")
 
     agrupados: dict[int, list[Registro]] = defaultdict(list)
     for i, r in enumerate(registros):
@@ -415,6 +415,9 @@ def montar_pessoas(grupos: list[list[Registro]], anteriores: dict[str, str]) -> 
     ids = atribuir_ids(grupos, anteriores)
     pessoas = []
     for pid, grupo in zip(ids, grupos, strict=True):
+        # Registros com papel primeiro: se a pessoa tem duas candidaturas em 2026 (trocou de cargo no registro),
+        # vale a que tem resultado, não a abandonada.
+        grupo = sorted(grupo, key=lambda r: not r.papeis)
         papeis: list[Papel] = []
         for r in grupo:
             for p in r.papeis:

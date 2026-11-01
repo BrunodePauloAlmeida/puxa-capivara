@@ -16,3 +16,8 @@ def test_slugify():
     assert slugify("Tabata Amaral") == "tabata-amaral"
     assert slugify("Lula") == "lula"
     assert slugify("Dr. João Ávila (PR)") == "dr-joao-avila-pr"
+
+
+def test_semelhanca_aproxima_grafias_alternativas():
+    assert semelhanca("PATRUS ANANIAS DE SOUZA", "PATRUS ANANIAS DE SOUSA") == 1.0
+    assert semelhanca("ELCIONE THEREZINHA", "ELCIONE TEREZINHA") == 1.0

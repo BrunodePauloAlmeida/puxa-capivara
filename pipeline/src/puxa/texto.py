@@ -19,9 +19,15 @@ def normalizar_nome(nome: str | None) -> str:
     return re.sub(r"\s+", " ", texto).strip()
 
 
+def _grafia_canonica(parte: str) -> str:
+    """Aproxima grafias que as fontes alternam: SOUZA/SOUSA, THEREZA/TEREZA, LUIZ/LUIS, MATTOS/MATOS."""
+    parte = parte.replace("PH", "F").replace("TH", "T").replace("Y", "I").replace("W", "V").replace("Z", "S")
+    return re.sub(r"(.)\1+", r"\1", parte)
+
+
 def tokens(nome: str | None) -> set[str]:
-    """Partes significativas do nome, sem 'da', 'de', 'dos'..."""
-    return {t for t in normalizar_nome(nome).split() if t not in _PARTICULAS}
+    """Partes significativas do nome, sem 'da', 'de', 'dos'..., com grafia aproximada."""
+    return {_grafia_canonica(t) for t in normalizar_nome(nome).split() if t not in _PARTICULAS}
 
 
 def semelhanca(a: str | None, b: str | None) -> float:

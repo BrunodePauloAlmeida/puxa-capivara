@@ -100,3 +100,24 @@ corrige o `fontes-de-dados.md` onde a pesquisa inicial estava errada ou incomple
    disputou outro cargo em 2026, e a curadoria confirma (`curadoria/governadores_em_exercicio.yaml`).
 5. TCU e GDELT precisam ser testados a partir do Google Cloud em São Paulo antes de entrar no roadmap como fontes
    automáticas.
+
+## Primeira execução do cadastro mestre (01/11/2026)
+
+`uv run puxa cadastro` juntou **862 pessoas**:
+
+| Cargo | Em exercício | Eleitos em 2026 |
+|---|---|---|
+| Presidente | 1 | 1 (a mesma pessoa) |
+| Governador | 27 | 27 |
+| Senador | 81 | 54 |
+| Deputado federal | 513 | 513 (303 são reeleições de quem está no cargo) |
+
+- 500 dos 513 deputados em exercício foram ligados à candidatura de 2026; os 13 restantes não disputaram a eleição.
+- 49 dos 81 senadores em exercício foram ligados ao TSE 2026 (os outros não disputaram; a maioria tem mandato até 2031).
+- **Governadores:** 8 trocas inferidas (titular disputou Senado ou Presidência e o vice assumiu): AC, AM, ES, GO, MG,
+  MT, PA e PB. No AM o vice também disputou outro cargo, então é preciso conferir quem governa hoje. Afastamentos
+  e cassações judiciais não aparecem em nenhuma API e precisam de conferência manual dos 27.
+- 31 pendências para revisão, em `dados/processado/cadastro/pendencias.csv`.
+- Lições incorporadas ao código: cruzar também com candidaturas a deputado estadual (vários deputados federais
+  disputaram vaga estadual), aceitar nome social pelo nome de urna e aproximar grafias (Souza/Sousa,
+  Thereza/Tereza).
