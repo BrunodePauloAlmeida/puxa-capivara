@@ -1,0 +1,116 @@
+# Votações-chave da legislatura 2023–2027 (decisão D5, aprovada em 01/11/2026).
+#
+# Critério: votação nominal em plenário, grande repercussão e alto impacto. Revisar a cada semestre.
+# Os IDs foram conferidos nas APIs da Câmara e do Senado em 01/11/2026 (ver docs/validacao-fontes.md).
+#
+# Campos:
+#   resumo         o que a proposta faz, em uma frase neutra (sem adjetivos). Revisar antes de publicar.
+#   significado_sim  o que um voto "Sim" representa na votação principal.
+#   camara/senado  votações nominais em plenário. "principal: true" é a que aparece no PDF; as demais vão para a
+#                  página online. "proposicao" só precisa ser informada quando o número muda entre as Casas.
+#   sem_votacao_nominal  quando a Casa decidiu sem registro de voto individual, explica o que aconteceu.
+#   tema_do_momento  destaca o tema no topo do PDF.
+
+votacoes_chave:
+  - id: reforma-tributaria
+    titulo: Reforma Tributária
+    proposicao: PEC 45/2019
+    resumo: >-
+      Substitui cinco tributos sobre o consumo (PIS, Cofins, IPI, ICMS e ISS) por um IVA dual: a CBS, federal, e o IBS,
+      de estados e municípios.
+    significado_sim: a favor da reforma
+    camara:
+      - {id: "2196833-326", data: 2023-07-06, descricao: "1º turno", principal: true}
+      - {id: "2196833-373", data: 2023-07-07, descricao: "2º turno"}
+    senado:
+      - {id: "6773", data: 2023-11-08, descricao: "1º turno (substitutivo)", principal: true}
+      - {id: "6777", data: 2023-11-08, descricao: "2º turno"}
+
+  - id: arcabouco-fiscal
+    titulo: Arcabouço fiscal
+    proposicao: PLP 93/2023
+    resumo: >-
+      Substitui o teto de gastos por um regime que limita o crescimento da despesa a uma parcela do crescimento da
+      receita.
+    significado_sim: a favor do novo regime fiscal
+    camara:
+      - {id: "2357053-47", data: 2023-05-23, descricao: "texto-base", principal: true}
+    senado:
+      - {id: "6714", data: 2023-06-21, descricao: "texto-base", principal: true}
+
+  - id: marco-temporal
+    titulo: Marco temporal das terras indígenas
+    proposicao: PL 490/2007 (Câmara) / PL 2903/2023 (Senado)
+    resumo: >-
+      Define que só podem ser demarcadas como terras indígenas as áreas ocupadas por esses povos em 5 de outubro
+      de 1988.
+    significado_sim: a favor do marco temporal
+    camara:
+      - {id: "345311-270", data: 2023-05-30, descricao: "texto-base", principal: true, proposicao: PL 490/2007}
+    senado:
+      - {id: "6756", data: 2023-09-27, descricao: "texto-base", principal: true, proposicao: PL 2903/2023}
+
+  - id: isencao-ir-5-mil
+    titulo: Isenção do IR até R$ 5 mil
+    proposicao: PL 1087/2025
+    resumo: >-
+      Isenta do Imposto de Renda quem ganha até R$ 5 mil por mês e cria uma tributação mínima para rendas muito
+      altas.
+    significado_sim: a favor da isenção
+    camara:
+      - {id: "2487436-169", data: 2025-10-01, descricao: "texto-base", principal: true}
+    senado: []
+    sem_votacao_nominal:
+      senado: Aprovado em 05/11/2025 sem registro de votação nominal.
+
+  - id: pec-da-blindagem
+    titulo: PEC da Blindagem
+    proposicao: PEC 3/2021
+    resumo: >-
+      Exige autorização da Câmara ou do Senado para que deputados e senadores sejam processados criminalmente.
+    significado_sim: a favor da PEC
+    camara:
+      - {id: "2270800-135", data: 2025-09-16, descricao: "1º turno", principal: true}
+      - {id: "2270800-160", data: 2025-09-16, descricao: "2º turno"}
+    senado: []
+    sem_votacao_nominal:
+      senado: Rejeitada na Comissão de Constituição e Justiça em 24/09/2025; não foi votada em plenário.
+
+  - id: licenciamento-ambiental
+    titulo: Lei geral do licenciamento ambiental
+    proposicao: PL 2159/2021
+    resumo: >-
+      Cria regras gerais para o licenciamento ambiental, incluindo a licença por adesão e compromisso, concedida a
+      partir de declaração do empreendedor.
+    significado_sim: a favor do projeto
+    camara:
+      - {id: "257161-454", data: 2025-07-17, descricao: "emendas do Senado (votação final)", principal: true}
+    senado:
+      - {id: "6935", data: 2025-05-21, descricao: "texto-base", principal: true}
+
+  - id: dosimetria-8-de-janeiro
+    titulo: Redução de penas do 8 de janeiro (PL da Dosimetria)
+    proposicao: PL 2162/2023
+    resumo: >-
+      Altera regras de cálculo e de progressão de penas, o que reduz as penas dos condenados pelos atos de 8 de
+      janeiro de 2023.
+    significado_sim: a favor da redução das penas
+    camara:
+      - {id: "2358548-89", data: 2025-12-10, descricao: "texto-base (substitutivo)", principal: true}
+    senado:
+      - {id: "7041", data: 2025-12-17, descricao: "texto-base", principal: true}
+
+  - id: fim-da-escala-6x1
+    titulo: Fim da escala 6x1
+    proposicao: PEC 221/2019
+    tema_do_momento: true
+    resumo: >-
+      Reduz a duração máxima da semana de trabalho e garante dois dias de descanso semanal remunerado, sem redução
+      de salário.
+    significado_sim: a favor do fim da escala 6x1
+    camara:
+      - {id: "2233802-424", data: 2026-05-27, descricao: "1º turno", principal: true}
+      - {id: "2233802-438", data: 2026-05-27, descricao: "2º turno"}
+    senado:
+      - {id: "7106", data: 2026-10-14, descricao: "1º turno", principal: true}
+      - {id: "7107", data: 2026-10-14, descricao: "2º turno"}
