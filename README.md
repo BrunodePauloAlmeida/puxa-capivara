@@ -6,6 +6,7 @@ e o que ele disse sobre os temas do momento.
 
 **Escopo inicial:** presidente, governadores, deputados federais e senadores.
 **Princípio:** só dados públicos, de fontes oficiais e gratuitas, com link para a fonte de cada informação.
+**Hospedagem:** Google Cloud (Cloud Run, Cloud Storage, Firebase Hosting), região São Paulo.
 
 ## Status
 

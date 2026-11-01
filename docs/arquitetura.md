@@ -1,34 +1,56 @@
-# Arquitetura proposta
+# Arquitetura
 
-Princípio: os dados mudam no máximo uma vez por dia, então **não precisa de servidor**. Um pipeline roda uma vez
-por dia, gera o site estático e todos os PDFs, e publica. Custo de infraestrutura: zero.
+Hospedagem no **Google Cloud**, no mesmo padrão do Observa Custódia: site Next.js no Cloud Run, Firebase Hosting na
+frente para domínio próprio, HTTPS e CDN, deploy pelo GitHub Actions sem chaves de serviço e segredos no
+Bitwarden. A diferença é que aqui os dados mudam todo dia, então existe um **pipeline agendado** que coleta,
+processa e gera os PDFs.
+
+Tudo em `southamerica-east1` (São Paulo). Além da latência menor, rodar no Brasil reduz o risco de bloqueio ou
+limitação que alguns sites públicos brasileiros aplicam a acessos de fora do país.
 
 ```
-  ┌──────────────────────── GitHub Actions (cron diário) ────────────────────────┐
-  │                                                                              │
-  │  1. Coletar           2. Normalizar          3. Curadoria        4. Gerar    │
-  │  APIs e arquivos  →   cadastro mestre,   →   itens sensíveis →   JSON por    │
-  │  (respostas brutas    votos, projetos,       aprovados por       político +  │
-  │   guardadas)          processos, temas       humanos (YAML)      PDF (1 pág) │
-  │                                                                              │
-  └───────────────────────────────────────┬──────────────────────────────────────┘
-                                          ▼
-                       Site estático (Cloudflare Pages / Vercel / GitHub Pages)
-                       busca no navegador → página do político → baixar PDF
+  Cloud Scheduler (diário)
+        │
+        ▼
+  ┌──────────────── Cloud Run Job: pipeline (Python) ────────────────┐
+  │ 1. Coletar        2. Normalizar       3. Curadoria     4. Gerar  │
+  │ APIs e arquivos → cadastro mestre, → itens aprovados → JSON por  │
+  │ (respostas brutas  votos, projetos,   (YAML do repo)   político +│
+  │  guardadas)        processos, temas                    PDF 1 pág │
+  └───────┬──────────────────────────────────────────────────┬───────┘
+          ▼                                                  ▼
+  Cloud Storage: bruto/  processado/ (Parquet)        Cloud Storage: site/ (JSON) e pdf/
+                                                             │
+          ┌──────────────────────────────────────────────────┘
+          ▼
+  Cloud Run: frontend (Next.js) ◄── Firebase Hosting (domínio, HTTPS, CDN) ◄── visitante
+  Cloud Run: backend (FastAPI): formulário de correção e direito de resposta
 ```
 
-## Stack sugerida
+Ao final de cada execução, o pipeline publica uma nova release do Firebase Hosting, que limpa o cache do CDN (o
+Observa Custódia faz o mesmo depois de cada deploy do frontend).
 
-| Parte | Escolha | Por quê |
+## Componentes
+
+| Parte | Escolha | Observações |
 |---|---|---|
-| Coleta e tratamento | **Python 3.12** (httpx, tenacity, polars/pandas, pydantic) | Ecossistema de dados forte; a maior parte das libs e exemplos para dados públicos brasileiros é em Python |
-| Armazenamento | **DuckDB + Parquet** versionados (ou Postgres grátis no Supabase/Neon, se precisar de painel de curadoria online) | Sem servidor, rápido, cabe tudo (~620 pessoas) |
-| Curadoria | Arquivos **YAML no repositório** + revisão por pull request | Histórico de quem aprovou o quê, sem precisar construir painel no MVP |
-| Site | **Astro** ou **Next.js (export estático)** | Páginas pré-geradas, rápidas, boas para SEO |
-| Busca | **MiniSearch/Fuse.js** no navegador | O índice de ~620 nomes tem poucas dezenas de KB |
-| PDF | **Playwright (Chromium) imprimindo HTML/CSS** | O mesmo template serve para a página e para o PDF; controle fino do layout de uma página |
-| Agendamento | **GitHub Actions** (grátis para repositório público) | Cron diário + deploy |
-| IA (opcional) | API do Claude, modelo pequeno, só para itens novos | Resumir discursos e notícias por tema; sempre com revisão |
+| Pipeline | **Python 3.13 + uv**, rodando como **Cloud Run Job** acionado pelo **Cloud Scheduler** | httpx, tenacity, polars, pydantic. O mesmo código roda local com `uv run`. Sem limite de 6h por execução e sem depender de runner nos EUA |
+| Armazenamento | **Cloud Storage** (respostas brutas, Parquet, JSON do site, PDFs) | DuckDB lê o Parquet direto para as transformações |
+| Dados de apoio | **BigQuery** (opcional) | Consultar as tabelas públicas da Base dos Dados (Câmara, Senado, TSE) no mesmo projeto, para carregar o histórico. Grátis até 1 TB de consulta por mês |
+| Frontend | **Next.js** (`output: "standalone"`) em Docker no **Cloud Run** | Página por político, busca, página de metodologia. Lê os JSON do bucket com cache |
+| Domínio e CDN | **Firebase Hosting** repassando tudo para o Cloud Run | O Cloud Run não aceita domínio próprio em `southamerica-east1` |
+| PDFs | Gerados no pipeline com **Playwright (Chromium)** a partir do mesmo HTML/CSS da página; servidos do Cloud Storage | Pré-gerados: o download é instantâneo e não pesa no Cloud Run |
+| Backend | **FastAPI** no **Cloud Run**, com limite de requisições (slowapi) e envio de e-mail | Só para o formulário de correção e direito de resposta no MVP. Depois, painel de curadoria |
+| Busca | **MiniSearch** no navegador | Índice pequeno (cerca de 1 mil nomes), gerado pelo pipeline |
+| CI/CD | **GitHub Actions** + **Workload Identity Federation** + **Artifact Registry** | Testes antes do deploy: pytest, Vitest, Playwright (fumaça e acessibilidade) |
+| Segredos | **Bitwarden Secrets Manager** (`bws`) | Chave da API do Portal da Transparência, chave do DataJud, chave da API do Claude, SMTP. Viram variáveis de ambiente do Cloud Run a cada deploy |
+| IA | API do Claude, modelo pequeno, só para itens novos | Resumir discursos e notícias por tema; tudo passa por revisão antes de publicar |
+| Curadoria | Arquivos **YAML no repositório**, revisados por pull request | Votações-chave, temas do momento, processos confirmados, posições revisadas |
+
+## Custo
+Não é mais custo zero, mas fica perto disso: Cloud Run com `min-instances=0`, um job diário e alguns GB no Cloud
+Storage cabem no nível gratuito ou ficam em poucos reais por mês. O projeto precisa de faturamento ativado (o
+Firebase Hosting com repasse para o Cloud Run exige o plano Blaze). O maior custo variável tende a ser a IA.
 
 ## Modelo de dados (v1)
 
@@ -83,12 +105,16 @@ O QR code leva para a página online, que tem todos os links das fontes (no PDF 
 
 ```
 puxa-capivara/
-├── pipeline/            # Python: coletores, normalização, geração
+├── pipeline/            # Python 3.13 + uv; vira a imagem do Cloud Run Job
 │   ├── coletores/       # camara.py, senado.py, tse.py, cgu.py, tcu.py, noticias.py
 │   ├── normalizacao/    # cadastro mestre, cruzamento de IDs
-│   └── gerar/           # JSON por político, PDFs
+│   ├── gerar/           # JSON por político, índice de busca, PDFs
+│   └── Dockerfile
 ├── curadoria/           # YAML revisado por humanos: votações-chave, temas, processos
-├── site/                # Astro/Next.js
-├── dados/               # Parquet/DuckDB (ou bucket externo)
+├── frontend/            # Next.js (standalone) + Dockerfile
+├── backend/             # FastAPI: formulário de correção + Dockerfile
+├── firebase.json        # Firebase Hosting → Cloud Run
+├── scripts/             # get-secrets.sh (Bitwarden → .env local)
+├── .github/workflows/   # deploy-frontend.yml, deploy-backend.yml, deploy-pipeline.yml
 └── docs/
 ```
