@@ -1,5 +1,5 @@
 # Copia o pacote de dados do site (site-web.tar.gz, guardado com Git LFS no branch dados-site) para o
-# Cloud Storage. O site lê do bucket {projeto}-dados, pasta web/.
+# Cloud Storage. O site lê do bucket da variável GCP_BUCKET, pasta web/.
 # Rodar à mão: Actions > Publicar dados do site > Run workflow.
 # Mais tarde, o pipeline no Cloud Run Job grava direto no bucket e este workflow deixa de ser necessário.
 name: Publicar dados do site
@@ -44,6 +44,7 @@ jobs:
       - name: Sincronizar com o bucket
         env:
           PROJETO: ${{ vars.GCP_PROJECT_ID }}
+          BUCKET: ${{ vars.GCP_BUCKET }}
         run: |
-          gcloud storage rsync web "gs://$PROJETO-dados/web" \
+          gcloud storage rsync web "gs://$BUCKET/web" \
             --recursive --delete-unmatched-destination-objects --project "$PROJETO"

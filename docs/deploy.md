@@ -3,6 +3,10 @@
 Tudo pelo navegador: console do Google Cloud, console do Firebase e GitHub. Não precisa instalar `gcloud`.
 Leva uns 40 minutos na primeira vez. Depois disso, cada merge na `main` publica o site sozinho.
 
+**Atalho pelo terminal:** com `gcloud` autenticado como dono do projeto, `infra/gcp-setup.sh` faz os passos 1 a 5
+(com permissões mais estreitas que as do console). Foi assim que o projeto `puxa-capivara-513419` foi montado
+em 01/11/2026: bucket `puxa-capivara-dados`, site em <https://puxa-capivara-513419.web.app>.
+
 ## Como fica no ar
 
 ```
@@ -12,7 +16,7 @@ navegador ──> Firebase Hosting (CDN, HTTPS, domínio)
               Cloud Run: puxa-capivara-site (Next.js, São Paulo)
                  │  lê com a conta de serviço puxa-site
                  v
-              Cloud Storage: SEU_PROJETO-dados/web/  (índice, fichas em JSON, fotos, PDFs)
+              Cloud Storage: puxa-capivara-dados/web/  (índice, fichas em JSON, fotos, PDFs)
 ```
 
 - **GitHub Actions** constrói a imagem, envia para o **Artifact Registry** e publica no Cloud Run. Ele entra no
@@ -62,7 +66,7 @@ Console > **Cloud Storage** > **Buckets** > **Criar**:
 
 | Campo | Valor |
 |---|---|
-| Nome | `SEU_PROJETO-dados` |
+| Nome | `puxa-capivara-dados` (ou outro; o nome vai na variável `GCP_BUCKET` do passo 8) |
 | Tipo de local | Região: `southamerica-east1 (São Paulo)` |
 | Classe | Standard |
 | Acesso | Marque **Aplicar a prevenção do acesso público**; controle de acesso **Uniforme** |
@@ -142,13 +146,28 @@ Console > **Cloud Run** > **Implantar contêiner** > **Serviço**:
 | Imagem | `us-docker.pkg.dev/cloudrun/container/hello` |
 | Nome do serviço | `puxa-capivara-site` |
 | Região | `southamerica-east1 (São Paulo)` |
-| Autenticação | **Permitir acesso público** (ou "Permitir invocações não autenticadas") |
+| Autenticação | **Permitir acesso público** (veja a nota abaixo) |
 | Faturamento | Baseado em solicitações |
 | Escalonamento | mínimo 0, máximo 3 instâncias |
 | Entrada | Todas |
 | Segurança (em "Contêineres, volumes, rede, segurança") | Conta de serviço: `puxa-site` |
 
 Criar. Se a URL `...run.app` mostrar a página "It's running!", deu certo.
+
+**Nota sobre a organização Bloomcore:** a política da organização (`iam.allowedPolicyMemberDomains`) só aceita
+contas do domínio, então o acesso público pela forma clássica (`allUsers` como invocador) é recusado. Há duas
+saídas:
+
+- **Desativar a verificação de IAM do invocador só neste serviço** (recomendado, não mexe na política da
+  organização). No console: Cloud Run > `puxa-capivara-site` > aba **Segurança** > Autenticação > **Permitir acesso
+  público**, que nos consoles recentes faz exatamente isso. No Cloud Shell:
+
+  ```bash
+  gcloud run services update puxa-capivara-site --region southamerica-east1 --no-invoker-iam-check
+  ```
+
+- Abrir uma exceção à política no projeto, como foi feito no Observa Custódia. Libera `allUsers` para qualquer
+  recurso do projeto, então é mais amplo.
 
 ## 7. Firebase Hosting
 
@@ -175,6 +194,7 @@ Aba **Variables** > **New repository variable**:
 | Nome | Valor |
 |---|---|
 | `GCP_PROJECT_ID` | `SEU_PROJETO` |
+| `GCP_BUCKET` | `puxa-capivara-dados` |
 
 Enquanto `GCP_PROJECT_ID` estiver vazia, os workflows de deploy são pulados, sem erro.
 
@@ -212,7 +232,8 @@ alerta de gasto.
 | `Permission 'iam.serviceaccounts.actAs' denied` no Cloud Run | Falta Service Account User para `github-deploy` |
 | Firebase: `HTTP Error: 403` | Firebase não foi adicionado ao projeto, Hosting não foi iniciado (passo 7.4), ou faltam os papéis do Firebase Hosting / Service Usage |
 | Site abre, mas mostra "Algo deu errado" | Dados ainda não publicados (passo 9.2), ou `puxa-site` sem Leitor de objetos do Storage |
-| Navegador mostra `Forbidden` | Serviço do Cloud Run sem acesso público (passo 6) |
+| Navegador mostra `Forbidden` | Serviço do Cloud Run sem acesso público (passo 6 e a nota sobre a organização) |
+| Deploy pelo GitHub reclama de `run.services.setIamPolicy` | A verificação de IAM do invocador foi desativada por outra conta; rode o deploy uma vez como dono ou dê `roles/run.admin` à `github-deploy` |
 
 ## Atualizar os dados
 
