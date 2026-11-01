@@ -30,6 +30,8 @@ cd pipeline
 uv sync
 uv run pytest -q          # testes (sem rede)
 uv run puxa cadastro      # monta o cadastro mestre em dados/processado/cadastro/
+uv run puxa votacoes      # votos das votações-chave (curadoria/votacoes_chave.yaml)
+uv run puxa producao      # projetos apresentados e que viraram norma, desde 2019
 ```
 
 Os dados baixados e gerados ficam em `dados/` (fora do Git). Correções manuais ficam em `curadoria/`.

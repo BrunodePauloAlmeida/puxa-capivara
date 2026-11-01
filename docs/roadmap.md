@@ -43,7 +43,9 @@ Objetivo: ter certeza de que as fontes entregam o que o mapa promete, antes de c
 Objetivo: site no ar com busca e PDF para **deputados federais e senadores**, só com dados objetivos.
 
 - [ ] Coletores: Câmara (deputados, proposições, autorias, votações, votos, discursos) e Senado (idem)
-- [ ] Lista curada de **votações-chave** da legislatura 2023–2026, incluindo a PEC da 6x1 (ver `decisoes.md`)
+- [x] Lista curada de **votações-chave** da legislatura 2023–2026, incluindo a PEC da 6x1 (`curadoria/votacoes_chave.yaml`)
+- [x] Coleta dos votos das votações-chave nas duas Casas (`puxa votacoes`)
+- [x] Produção legislativa: projetos apresentados e que viraram norma (`puxa producao`)
 - [ ] Indicadores: projetos apresentados, projetos que viraram lei, presença, alinhamento com o partido e com o governo
 - [ ] Blocos do TSE: patrimônio declarado (2018 → 2022 → 2026) e principais doadores
 - [ ] Template do PDF de uma página (HTML/CSS → PDF) + página web equivalente

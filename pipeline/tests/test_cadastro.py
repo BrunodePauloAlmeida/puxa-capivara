@@ -39,7 +39,7 @@ def test_liga_camara_e_tse_pelo_cpf():
     pessoas = cadastro.montar_pessoas(grupos, {})
     assert len(pessoas) == 1 and not pendencias
     p = pessoas[0]
-    assert (p.camara_id, p.tse_sq_2026, p.nome_urna) == ("10", "2", "MARIA")
+    assert (p.camara_id, p.tse_sq_2026, p.nome_urna) == ("10", "2", "Maria Souza")
     assert {(x.cargo, x.situacao) for x in p.papeis} == {
         ("deputado_federal", "em_exercicio"),
         ("deputado_federal", "eleito_2026"),
