@@ -57,8 +57,10 @@ class Registro:
     cpf: str | None = None
     nascimento: str | None = None  # AAAA-MM-DD
     uf: str | None = None
+    uf_eleicao: str | None = None  # SG_UF da candidatura no TSE (inclui "BR" para presidente)
     partido: str | None = None
     foto: str | None = None
+    genero: str | None = None  # "F" | "M"
     papeis: list[Papel] = field(default_factory=list)
 
     @property
@@ -77,7 +79,10 @@ class Pessoa:
     senado_codigo: str | None
     tse_sq_2026: str | None
     tse_sq_2022: str | None
+    tse_uf_2026: str | None
+    tse_uf_2022: str | None
     foto: str | None
+    genero: str | None
     chaves: list[str]
     papeis: list[Papel]
 
@@ -91,6 +96,14 @@ class Pendencia:
 
 # --------------------------------------------------------------------------------------------------------------
 # Registros de cada fonte
+
+
+def _genero(valor: str | None) -> str | None:
+    """'F', 'Feminino', 'FEMININO' -> 'F'; 'M', 'Masculino' -> 'M'."""
+    if not valor:
+        return None
+    inicial = valor.strip()[:1].upper()
+    return inicial if inicial in ("F", "M") else None
 
 
 def registros_camara(deputados: list[dict], detalhes: dict[int, dict]) -> list[Registro]:
@@ -109,6 +122,7 @@ def registros_camara(deputados: list[dict], detalhes: dict[int, dict]) -> list[R
                 uf=d["siglaUf"],
                 partido=d["siglaPartido"],
                 foto=d.get("urlFoto"),
+                genero=_genero(det.get("sexo") or det.get("siglaSexo")),
                 papeis=[Papel("deputado_federal", "em_exercicio", d["siglaUf"], d["siglaPartido"], "camara")],
             )
         )
@@ -132,6 +146,7 @@ def registros_senado(senadores: list[dict], detalhes: dict[str, dict]) -> list[R
                 uf=s["uf"],
                 partido=s["partido"],
                 foto=s.get("foto"),
+                genero=_genero(s.get("sexo")),
                 papeis=[
                     Papel("senador", "em_exercicio", s["uf"], s["partido"], "senado", observacao=observacao)
                 ],
@@ -150,7 +165,9 @@ def _registro_tse(linha: dict, fonte: str, papeis: list[Papel] | None = None) ->
         cpf=tse.cpf_valido(linha.get("NR_CPF_CANDIDATO")),
         nascimento=tse.data_iso(linha.get("DT_NASCIMENTO")),
         uf=uf,
+        uf_eleicao=linha["SG_UF"] or None,
         partido=linha.get("SG_PARTIDO"),
+        genero=_genero(linha.get("DS_GENERO")),
         papeis=papeis or [],
     )
 
@@ -436,7 +453,10 @@ def montar_pessoas(grupos: list[list[Registro]], anteriores: dict[str, str]) -> 
                 senado_codigo=_id_da_fonte(grupo, "senado"),
                 tse_sq_2026=_id_da_fonte(grupo, "tse2026"),
                 tse_sq_2022=_id_da_fonte(grupo, "tse2022"),
+                tse_uf_2026=next((r.uf_eleicao for r in grupo if r.fonte == "tse2026"), None),
+                tse_uf_2022=next((r.uf_eleicao for r in grupo if r.fonte == "tse2022"), None),
                 foto=_primeiro(grupo, "foto", ["camara", "senado"]),
+                genero=_primeiro(grupo, "genero", ["camara", "senado", "tse2026", "tse2022"]),
                 chaves=sorted(r.chave for r in grupo),
                 papeis=papeis,
             )
