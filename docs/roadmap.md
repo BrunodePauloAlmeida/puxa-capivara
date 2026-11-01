@@ -48,7 +48,8 @@ Objetivo: site no ar com busca e PDF para **deputados federais e senadores**, s�
 - [x] Produção legislativa: projetos apresentados e que viraram norma (`puxa producao`)
 - [ ] Indicadores: projetos apresentados, projetos que viraram lei, presença, alinhamento com o partido e com o governo
 - [ ] Blocos do TSE: patrimônio declarado (2018 → 2022 → 2026) e principais doadores
-- [ ] Template do PDF de uma página (HTML/CSS → PDF) + página web equivalente
+- [x] Template do PDF de uma página (HTML/CSS → PDF), rascunho v1 (`puxa ficha`)
+- [ ] Página web equivalente
 - [ ] Busca por nome (com e sem acento, nome de urna e nome civil)
 - [ ] Página de **metodologia e fontes** (como cada número é calculado)
 - [ ] Pipeline como Cloud Run Job acionado diariamente pelo Cloud Scheduler
