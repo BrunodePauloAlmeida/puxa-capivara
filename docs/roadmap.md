@@ -1,117 +1,104 @@
-# Roadmap
+# Roadmap: tudo construído até 31/12/2026
 
-Premissas (decididas em 31/10/2026, ver `decisoes.md`): escopo = presidente, governadores, deputados federais e
-senadores, **atuais e eleitos em 2026** (cerca de 620 cargos; a união das duas listas fica um pouco maior porque
-parte dos eleitos é nova). Deputados estaduais só depois do MVP. IA com revisão humana. Processos com fontes
-oficiais + curadoria. Hospedagem no Google Cloud no padrão do Observa Custódia (custo perto de zero).
+Atualizado em 01/11/2026. Todo o desenvolvimento cabe em oito semanas, de 02/11 a 31/12/2026: quatro sprints de duas
+semanas e uma semana de fechamento. Depois disso, as eleições de 2028 e 2030 são operação do sistema pronto, não novas
+fases de construção.
 
-Durações estimadas para uma pessoa em meio período. Servem para ordenar o trabalho, não são prazo.
+A versão para patrocinadores, com custos, equipe, governança e riscos, é mantida em documento à parte.
 
----
+## Já entregue
 
-## Fase 0: Fundação e validação das fontes (1–2 semanas)
+- [x] Fontes validadas ao vivo (`validacao-fontes.md`)
+- [x] Cadastro mestre com 862 pessoas (`puxa cadastro`)
+- [x] Votações-chave: 8 temas, 19 votações nominais (`puxa votacoes`)
+- [x] Produção legislativa desde 2019 (`puxa producao`)
+- [x] Fotos oficiais e ficha em PDF, rascunho v1 (`puxa fotos`, `puxa ficha`)
 
-Objetivo: ter certeza de que as fontes entregam o que o mapa promete, antes de construir em cima delas.
+## Sprint 1: ficha v2 e site no ar (02/11 a 15/11)
 
-- [x] Fechar as decisões de escopo em `decisoes.md`
-- [x] Criar o repositório no GitHub
-- [x] Liberar no ambiente do Claude os domínios da seção 8 de `fontes-de-dados.md`
-- [ ] **Google Cloud** (mesmo padrão do Observa Custódia):
-  - [ ] Projeto novo com faturamento, região `southamerica-east1`
-  - [ ] Artifact Registry, buckets do Cloud Storage (`bruto`, `processado`, `site`, `pdf`)
-  - [ ] Service account do CI + Workload Identity Federation ligada a este repositório (sem chave JSON)
-  - [ ] Firebase adicionado ao projeto (Hosting) e permissão de release para o CI
-  - [ ] Projeto `puxa-capivara` no Bitwarden Secrets Manager + secret `BWS_ACCESS_TOKEN` no GitHub
-- [x] Sondagem de cada fonte ao vivo: resultado em `validacao-fontes.md`
-- [ ] **Testes críticos:**
-  - [x] `/votacoes/{id}/votos` da Câmara traz votos depois de maio/2024? **Sim**
-  - [x] Achar as votações da PEC 221/2019 (6x1) na Câmara (maio/2026) e no Senado (14/10/2026) e baixar os votos nominais
-  - [x] Senado: quais rotas devolvem headers `Deprecation`/`Sunset` (42 de 157)
-  - [x] TSE: `consulta_cand_2026` e `bem_candidato_2026` já publicados com eleitos marcados? **Sim**
-  - [ ] TCU: existe exportação em CSV, mas o firewall bloqueou; repetir do GCP
-- [ ] **Cadastro mestre de pessoas** (atuais + eleitos em 2026): um ID interno por político, ligado aos IDs da Câmara, do Senado, do TSE (por
-  eleição) e do Wikidata. É a base de tudo, porque cada fonte escreve o nome de um jeito.
-- [ ] Modelo de dados v1 (ver `arquitetura.md`)
-- [ ] Testar Portal da Transparência (chave no Bitwarden), TCU e GDELT a partir do GCP
+- [ ] Ficha v2: um resumo de verdade, lido em 30 segundos (princípios abaixo), testada com 10 eleitores
+- [ ] Patrimônio, doadores e trajetória do TSE para as 862 pessoas
+- [ ] Presença, alinhamento ao partido e ao governo, cota parlamentar e emendas
+- [ ] Projeto no Google Cloud, site público com busca, página por pessoa, PDF e imagem para celular
+- [ ] Atualização diária automática; conferência dos 27 governadores; revisão dos resumos das votações-chave
+- [ ] Teste do TCU e do GDELT a partir do Google Cloud
 
-**Entrega:** relatório de validação + cadastro mestre com os ~620 nomes ligados às fontes.
+**Pronto quando:** o site estiver no ar com as 862 fichas v2.
 
----
+### Princípios da ficha v2
+1. No máximo cerca de 120 palavras na página, além dos nomes.
+2. Fato = número + rótulo curto; explicação, data e fonte vão para o site.
+3. Cinco blocos fixos, na mesma ordem para qualquer cargo: quem é; em 30 segundos (quatro indicadores); como votou ou
+   o que entregou; temas do momento; trajetória e dinheiro.
+4. Bloco sem dado não aparece.
+5. Votos em grade de ícones, com uma legenda só.
+6. Rodapé de uma linha com fontes, data e QR code para a página oficial (verificação da ficha).
+7. Dois formatos: A4 e imagem vertical para aplicativos de mensagem.
 
-## Fase 1: MVP com Congresso (3–4 semanas)
+## Sprint 2: gestão do presidente e dos governadores (16/11 a 29/11)
 
-Objetivo: site no ar com busca e PDF para **deputados federais e senadores**, só com dados objetivos.
+- [ ] Contas: despesa com pessoal, dívida, investimento e resultado, início e fim do mandato (Tesouro, SICONFI), e
+      parecer do tribunal de contas
+- [ ] Resultados: educação, saúde, segurança, emprego e renda, início e fim do mandato, ao lado da média nacional
+      (IBGE, INEP, DATASUS, Banco Central)
+- [ ] Promessas e entregas: plano de governo do TSE resumido por IA com revisão humana
+- [ ] Atos: medidas provisórias, vetos, leis e taxa de aprovação dos projetos do governo (presidente); leis e vetos
+      onde a assembleia publica dados (governadores)
+- [ ] Mandatos anteriores de todos e página pública de metodologia
 
-- [ ] Coletores: Câmara (deputados, proposições, autorias, votações, votos, discursos) e Senado (idem)
-- [x] Lista curada de **votações-chave** da legislatura 2023–2026, incluindo a PEC da 6x1 (`curadoria/votacoes_chave.yaml`)
-- [x] Coleta dos votos das votações-chave nas duas Casas (`puxa votacoes`)
-- [x] Produção legislativa: projetos apresentados e que viraram norma (`puxa producao`)
-- [ ] Indicadores: projetos apresentados, projetos que viraram lei, presença, alinhamento com o partido e com o governo
-- [ ] Blocos do TSE: patrimônio declarado (2018 → 2022 → 2026) e principais doadores
-- [x] Template do PDF de uma página (HTML/CSS → PDF), rascunho v1 (`puxa ficha`)
-- [ ] Página web equivalente
-- [ ] Busca por nome (com e sem acento, nome de urna e nome civil)
-- [ ] Página de **metodologia e fontes** (como cada número é calculado)
-- [ ] Pipeline como Cloud Run Job acionado diariamente pelo Cloud Scheduler
-- [ ] Frontend Next.js no Cloud Run + Firebase Hosting; backend FastAPI com o formulário de correção
-- [ ] Workflows de deploy no GitHub Actions com testes antes (pytest, Vitest, Playwright)
+**Pronto quando:** as 28 fichas executivas tiverem as quatro lentes, revisadas por um editor.
 
-**Entrega:** site público com cerca de 594 perfis de parlamentares e PDF para download.
+## Sprint 3: todos os eleitos e candidatos pela base do TSE (30/11 a 13/12)
 
----
+- [ ] Ficha base (identidade, trajetória, patrimônio, doadores, certidões e plano de governo) para os 5.541 prefeitos e
+      58.174 vereadores eleitos em 2024, os deputados estaduais e todos os candidatos de 2024 e 2026 (cerca de 485 mil
+      candidaturas)
+- [ ] Gestão dos prefeitos: contas (SICONFI), indicadores do município e diários oficiais (Querido Diário)
+- [ ] Escala: coleta em paralelo por UF (Cloud Run Jobs), BigQuery para as bases grandes, busca no servidor, PDF sob
+      demanda com cache
 
-## Fase 2: Executivo (2 semanas)
+**Pronto quando:** qualquer eleito ou candidato de 2024 e 2026 tiver ficha.
 
-- [ ] **Presidente:** MPs editadas, projetos enviados, vetos (e se foram derrubados), leis sancionadas, histórico
-  de mandatos, dados do TSE
-- [ ] **Governadores:** dados do TSE (patrimônio, doadores, resultado), mandatos anteriores (Câmara/Senado/TSE),
-  bloco de temas preenchido por curadoria
-- [ ] Ajustar o template do PDF para cargos executivos (sem "votos", com "atos de governo")
+## Sprint 4: processos, declarações e casas legislativas (14/12 a 27/12)
 
----
+- [ ] Coletores oficiais de processos: certidões criminais do TSE, TCU, CGU (chave no Bitwarden), conselhos de ética
+- [ ] Fila de curadoria para STF e STJ; andamento pelo DataJud
+- [ ] Discursos e notícias por tema, resumo por IA com revisão; temas do momento configuráveis
+- [ ] Votos e projetos das câmaras municipais e assembleias com dados abertos (SAPL e capitais)
+- [ ] Canal de correção e direito de resposta (até 48 h)
 
-## Fase 3: Processos e investigações (3–4 semanas)
+**Pronto quando:** os blocos de processos e declarações estiverem publicados para quem tem mandato, com parecer jurídico
+favorável.
 
-O bloco mais sensível. Só vai ao ar com regra editorial definida e revisão humana.
+## Fechamento: teste e lançamento (28/12 a 31/12)
 
-- [ ] Coletores automáticos: TSE (situação da candidatura, cassações), CGU (CEIS/CNEP/CEAF), Conselho de Ética
-  (representações), TCU (contas irregulares)
-- [ ] Extração das certidões criminais do TSE (PDF → texto → lista de processos)
-- [ ] Fila de curadoria: itens vindos de notícias e buscas manuais no STF/STJ entram como "pendente" e só são
-  publicados depois de alguém confirmar número do processo, tribunal e status
-- [ ] Acompanhamento de andamento pelo DataJud (para processos com número conhecido)
-- [ ] Canal de **correção e direito de resposta** + registro público de alterações
+- [ ] Teste de carga com volume de campanha, revisão final e lançamento da cobertura completa
 
----
+**Pronto quando:** em 31/12/2026 o sistema estiver no ar, atualizado todo dia sem intervenção manual.
 
-## Fase 4: Declarações e temas do momento (3 semanas)
+## Para caber em 2026
 
-- [ ] Cadastro de "temas do período" (ex.: Fim da 6x1, Proibição das bets) com palavras-chave e votações ligadas
-- [ ] Coleta de discursos (Câmara/Senado) e notícias (GDELT + RSS das agências oficiais)
-- [ ] Classificação de posição por tema (a favor / contra / ambíguo / sem manifestação), com trecho citado e link
-  - IA faz resumo e classificação; uma pessoa revisa antes de publicar; o PDF mostra o aviso "resumo gerado por IA"
-- [ ] Bloco "Temas do momento" no topo do PDF
+- O prazo depende de a equipe e o projeto no Google Cloud estarem prontos no início do sprint 1, e de o desenvolvimento
+  seguir o ritmo do protótipo, feito com apoio de IA em dois dias.
+- O que depende de terceiros não trava o lançamento: se o parecer jurídico não sair até 27/12, o bloco de processos
+  entra em janeiro; câmaras e assembleias sem dados abertos entram ao longo de 2027.
+- A curadoria humana (processos de STF e STJ, revisão dos resumos de IA) começa em dezembro e segue permanente.
 
----
+## Depois de 2026: operação
 
-## Fase 5: Escala e evolução (contínuo)
-
-- [ ] Deputados estaduais: começar pelas assembleias com API (SAPL e casas maiores)
-- [ ] Histórico de versões do PDF (o que mudou e quando)
-- [ ] API pública própria com os dados consolidados
-- [ ] Alertas por e-mail quando um político acompanhado vota ou ganha um processo novo
-- [ ] Preparação para as eleições de 2028 (municipais) e 2030 (gerais)
-
----
+- **2027:** troca de mandato automática nas posses (05/01, 06/01 e 01/02); câmaras e assembleias sem dados abertos.
+- **2028:** registros de candidatura a partir de 15/08 (ingestão a cada hora no período) e ficha em até 48 h; 1º turno
+  em 01/10 e 2º turno em 29/10; posse dos eleitos em 01/01/2029.
+- **2030:** o mesmo ciclo para as eleições gerais, com 1º turno em 06/10.
 
 ## Riscos principais
 
-| Risco | Impacto | Mitigação |
-|---|---|---|
-| Processo por calúnia ou difamação | Alto | Só fontes oficiais, status jurídico exato, revisão humana, direito de resposta |
-| Escolha das votações e temas parecer enviesada | Alto | Critério público na página de metodologia; temas de ambos os lados |
-| API muda ou sai do ar | Médio | Guardar respostas brutas, alertas de quebra, preferir arquivos em lote |
-| Votos recentes da Câmara indisponíveis pela API | Médio | Arquivos anuais `votacoesVotos` |
-| Nomes diferentes entre fontes | Médio | Cadastro mestre com IDs cruzados + revisão manual dos casos ambíguos |
-| Custo de IA ou do Google Cloud crescer | Baixo | Processar só o que é novo, modelo pequeno, cache; `min-instances=0`; alerta de orçamento no GCP |
-| Regras eleitorais em ano de eleição | Médio | Site neutro, sem impulsionamento pago, conteúdo de IA rotulado; consultar advogado eleitoral antes de 2028 |
+| Risco | Mitigação |
+|---|---|
+| Prazo de oito semanas | Escopo fechado por sprint; o que depende de terceiros entra na operação sem travar o lançamento |
+| Ação por calúnia ou difamação | Fonte oficial em cada fato, status jurídico exato, revisão humana, correção em até 48 h |
+| Percepção de viés | Metodologia pública, conselho plural, mesmos blocos para todos, cores neutras |
+| Dados municipais desiguais | Base do TSE igual para todos; cobertura de cada cidade informada na ficha |
+| Mudança ou queda de APIs | Cópia das respostas brutas, aviso de serviço depreciado, arquivos em lote |
+| Pico de acesso na campanha | Teste de carga em dezembro, CDN, PDF sob demanda com cache |
+| Fichas falsas circulando | QR code de verificação em cada PDF |

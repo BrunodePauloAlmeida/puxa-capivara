@@ -16,7 +16,7 @@ Fase 1 em andamento: cadastro mestre, votações-chave, produção legislativa e
 ## Documentação
 
 - [Mapa de fontes de dados](docs/fontes-de-dados.md): APIs públicas gratuitas, o que cada uma entrega e limitações
-- [Roadmap](docs/roadmap.md): fases, entregas e riscos
+- [Roadmap](docs/roadmap.md): tudo construído até 31/12/2026, em quatro sprints; depois, operação nas eleições de 2028 e 2030
 - [Arquitetura](docs/arquitetura.md): stack, modelo de dados e layout do PDF
 - [Validação das fontes](docs/validacao-fontes.md): resultado dos testes ao vivo de cada fonte
 - [Decisões](docs/decisoes.md): escolhas de escopo e editoriais
