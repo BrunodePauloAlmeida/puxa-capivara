@@ -51,4 +51,4 @@ Escolher votações é um ato editorial: precisa de critério público e de tema
 - [ ] Criar o projeto no Google Cloud com faturamento ativado, Firebase adicionado e Workload Identity Federation
   para o GitHub Actions (passo a passo no roadmap, Fase 0)
 - [x] Criar o projeto `puxa-capivara` no Bitwarden Secrets Manager
-- [ ] Disponibilizar o token do Bitwarden para o Claude (variável de ambiente `BITWARDEN_ACCESS_TOKEN`, vale a partir de uma sessão nova) e para o CI (secret `BWS_ACCESS_TOKEN` no GitHub)
+- [ ] Disponibilizar o token do Bitwarden para o Claude (variável de ambiente `BITWARDEN_ACCESS_TOKEN`, vale a partir de uma sessão nova) e para o CI (secret `BITWARDEN_ACCESS_TOKEN` no GitHub)

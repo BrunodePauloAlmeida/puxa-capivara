@@ -43,7 +43,7 @@ jobs:
       - name: Segredos do Bitwarden
         uses: ./.github/actions/segredos-bitwarden
         with:
-          access_token: ${{ secrets.BWS_ACCESS_TOKEN }}
+          access_token: ${{ secrets.BITWARDEN_ACCESS_TOKEN }}
           server_url: ${{ vars.BWS_SERVER_URL }}
           chaves: GCP_WORKLOAD_IDENTITY_PROVIDER GCP_SA_EMAIL
 
