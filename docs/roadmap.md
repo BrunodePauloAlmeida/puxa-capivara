@@ -3,7 +3,7 @@
 Premissas (decididas em 31/10/2026, ver `decisoes.md`): escopo = presidente, governadores, deputados federais e
 senadores, **atuais e eleitos em 2026** (cerca de 620 cargos; a união das duas listas fica um pouco maior porque
 parte dos eleitos é nova). Deputados estaduais só depois do MVP. IA com revisão humana. Processos com fontes
-oficiais + curadoria. Custo zero de infraestrutura.
+oficiais + curadoria. Hospedagem no Google Cloud no padrão do Observa Custódia (custo perto de zero).
 
 Durações estimadas para uma pessoa em meio período. Servem para ordenar o trabalho, não são prazo.
 
@@ -13,8 +13,15 @@ Durações estimadas para uma pessoa em meio período. Servem para ordenar o tra
 
 Objetivo: ter certeza de que as fontes entregam o que o mapa promete, antes de construir em cima delas.
 
-- [x] Fechar as decisões de escopo em `decisoes.md` (D1–D4 decididas; D5–D6 pendentes)
-- [ ] Criar o repositório no GitHub e liberar os domínios da seção 8 de `fontes-de-dados.md` no ambiente
+- [x] Fechar as decisões de escopo em `decisoes.md`
+- [x] Criar o repositório no GitHub
+- [ ] Liberar no ambiente do Claude os domínios da seção 8 de `fontes-de-dados.md`
+- [ ] **Google Cloud** (mesmo padrão do Observa Custódia):
+  - [ ] Projeto novo com faturamento, região `southamerica-east1`
+  - [ ] Artifact Registry, buckets do Cloud Storage (`bruto`, `processado`, `site`, `pdf`)
+  - [ ] Service account do CI + Workload Identity Federation ligada a este repositório (sem chave JSON)
+  - [ ] Firebase adicionado ao projeto (Hosting) e permissão de release para o CI
+  - [ ] Projeto `puxa-capivara` no Bitwarden Secrets Manager + secret `BWS_ACCESS_TOKEN` no GitHub
 - [ ] Script de sondagem: chamar cada fonte, salvar uma amostra da resposta, registrar campos, tempo e limites
 - [ ] **Testes críticos:**
   - [ ] `/votacoes/{id}/votos` da Câmara traz votos depois de maio/2024? Senão, validar `votacoesVotos-2026.csv`
@@ -41,7 +48,9 @@ Objetivo: site no ar com busca e PDF para **deputados federais e senadores**, s�
 - [ ] Template do PDF de uma página (HTML/CSS → PDF) + página web equivalente
 - [ ] Busca por nome (com e sem acento, nome de urna e nome civil)
 - [ ] Página de **metodologia e fontes** (como cada número é calculado)
-- [ ] Atualização automática diária (GitHub Actions) e deploy estático
+- [ ] Pipeline como Cloud Run Job acionado diariamente pelo Cloud Scheduler
+- [ ] Frontend Next.js no Cloud Run + Firebase Hosting; backend FastAPI com o formulário de correção
+- [ ] Workflows de deploy no GitHub Actions com testes antes (pytest, Vitest, Playwright)
 
 **Entrega:** site público com cerca de 594 perfis de parlamentares e PDF para download.
 
@@ -100,5 +109,5 @@ O bloco mais sensível. Só vai ao ar com regra editorial definida e revisão hu
 | API muda ou sai do ar | Médio | Guardar respostas brutas, alertas de quebra, preferir arquivos em lote |
 | Votos recentes da Câmara indisponíveis pela API | Médio | Arquivos anuais `votacoesVotos` |
 | Nomes diferentes entre fontes | Médio | Cadastro mestre com IDs cruzados + revisão manual dos casos ambíguos |
-| Custo de IA crescer | Baixo | Processar só o que é novo, modelo pequeno, cache |
+| Custo de IA ou do Google Cloud crescer | Baixo | Processar só o que é novo, modelo pequeno, cache; `min-instances=0`; alerta de orçamento no GCP |
 | Regras eleitorais em ano de eleição | Médio | Site neutro, sem impulsionamento pago, conteúdo de IA rotulado; consultar advogado eleitoral antes de 2028 |

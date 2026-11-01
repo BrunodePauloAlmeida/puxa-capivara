@@ -34,15 +34,20 @@ Escolher votações é um ato editorial: precisa de critério público e de tema
   PEC da Blindagem (PEC 3/2021), Licenciamento ambiental (PL 2.159/2021), dosimetria das penas do 8 de janeiro,
   fim da escala 6x1 (PEC 221/2019).
 - **Proposta de critério:** votação nominal em plenário + grande repercussão + alto impacto, revisado a cada semestre.
-- **Decisão:** _pendente_
+- **Decisão (01/11/2026):** aprovadas as votações-chave sugeridas e os dois temas do momento.
 
 ## D6. Stack e hospedagem
-- **Recomendação:** Python no pipeline, site estático (Astro ou Next.js), PDF via Playwright, GitHub Actions diário,
-  hospedagem grátis (Cloudflare Pages ou Vercel). Detalhes em `arquitetura.md`.
-- **Decisão:** _pendente_
+- **Recomendação inicial:** Python no pipeline, site estático (Astro ou Next.js), PDF via Playwright, GitHub Actions
+  diário, hospedagem grátis (Cloudflare Pages ou Vercel).
+- **Decisão (01/11/2026):** stack aprovada, mas hospedada no **Google Cloud, no mesmo padrão do Observa Custódia**:
+  Next.js no Cloud Run com Firebase Hosting na frente, pipeline como Cloud Run Job agendado, Cloud Storage,
+  GitHub Actions com Workload Identity Federation e segredos no Bitwarden. Detalhes em `arquitetura.md`.
 
-## D7. Acessos necessários
-- [ ] Liberar no ambiente os domínios listados em `fontes-de-dados.md`, seção 8 (hoje bloqueados)
-- [ ] Instalar o app do Claude no GitHub para este repositório (hoje o envio de commits é recusado)
-- [ ] Cadastrar e-mail para a chave gratuita da API do Portal da Transparência (CGU)
-- [ ] Gerar a chave pública do DataJud (CNJ) (publicada na wiki do DataJud)
+## D7. Acessos e configuração
+- [ ] Liberar no ambiente do Claude os domínios listados em `fontes-de-dados.md`, seção 8 (hoje bloqueados)
+- [x] Instalar o app do Claude no GitHub para este repositório
+- [ ] Chave gratuita da API do Portal da Transparência (CGU): o Bruno cadastra
+- [ ] Chave pública do DataJud (CNJ), publicada na wiki do DataJud (só na Fase 3)
+- [ ] Criar o projeto no Google Cloud com faturamento ativado, Firebase adicionado e Workload Identity Federation
+  para o GitHub Actions (passo a passo no roadmap, Fase 0)
+- [ ] Criar o projeto `puxa-capivara` no Bitwarden Secrets Manager e o token de acesso para o CI
