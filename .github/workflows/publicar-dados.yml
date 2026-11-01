@@ -1,0 +1,46 @@
+# Copia o pacote de dados do site (asset site-web.tar.gz de uma release do GitHub) para o Cloud Storage.
+# O site lê do bucket {projeto}-dados, pasta web/. Rodar à mão: Actions > Publicar dados do site > Run workflow.
+# Mais tarde, o pipeline no Cloud Run Job grava direto no bucket e este workflow deixa de ser necessário.
+name: Publicar dados do site
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: Release do GitHub com o asset site-web.tar.gz
+        required: true
+        default: dados-site-v1
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publicar:
+    if: vars.GCP_PROJECT_ID != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Baixar o pacote
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE: ${{ inputs.release }}
+        run: |
+          gh release download "$RELEASE" --repo "$GITHUB_REPOSITORY" --pattern site-web.tar.gz
+          mkdir web
+          tar -xzf site-web.tar.gz -C web
+          test -f web/indice.json && test -f web/meta.json
+          cat web/meta.json
+
+      - name: Sincronizar com o bucket
+        env:
+          PROJETO: ${{ vars.GCP_PROJECT_ID }}
+        run: |
+          gcloud storage rsync web "gs://$PROJETO-dados/web" \
+            --recursive --delete-unmatched-destination-objects --project "$PROJETO"

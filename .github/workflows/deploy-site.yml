@@ -1,0 +1,73 @@
+# Publica o site: imagem no Artifact Registry, nova revisão no Cloud Run e o Firebase Hosting na frente.
+# Roda a cada push na main que mexa no site, ou à mão (Actions > Deploy do site > Run workflow).
+# Configuração no GCP e no GitHub: docs/deploy.md.
+name: Deploy do site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "firebase.json"
+      - "infra/firebase/**"
+      - ".github/workflows/deploy-site.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-site
+  cancel-in-progress: false
+
+env:
+  REGIAO: southamerica-east1
+  SERVICO: puxa-capivara-site
+  PROJETO: ${{ vars.GCP_PROJECT_ID }}
+
+jobs:
+  deploy:
+    # Enquanto o GCP não estiver configurado (variável GCP_PROJECT_ID vazia), o job é pulado.
+    if: vars.GCP_PROJECT_ID != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Construir e enviar a imagem
+        run: |
+          IMAGEM="$REGIAO-docker.pkg.dev/$PROJETO/puxa-capivara/site:$GITHUB_SHA"
+          echo "IMAGEM=$IMAGEM" >> "$GITHUB_ENV"
+          gcloud auth configure-docker "$REGIAO-docker.pkg.dev" --quiet
+          docker build -t "$IMAGEM" site
+          docker push "$IMAGEM"
+
+      - name: Nova revisão no Cloud Run
+        run: |
+          gcloud run deploy "$SERVICO" \
+            --project "$PROJETO" \
+            --region "$REGIAO" \
+            --image "$IMAGEM" \
+            --service-account "puxa-site@$PROJETO.iam.gserviceaccount.com" \
+            --set-env-vars "PUXA_BUCKET=$PROJETO-dados,PUXA_PREFIXO=web" \
+            --port 8080 \
+            --memory 512Mi \
+            --cpu 1 \
+            --min-instances 0 \
+            --max-instances 3 \
+            --concurrency 80 \
+            --quiet
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Firebase Hosting
+        run: npx --yes firebase-tools@15.34.2 deploy --only hosting --project "$PROJETO" --non-interactive
