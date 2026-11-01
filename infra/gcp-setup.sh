@@ -76,9 +76,8 @@ g iam service-accounts add-iam-policy-binding "$SA_DEPLOY" --role roles/iam.work
 
 cat <<FIM
 
-Pronto. Valores para o GitHub (Settings > Secrets and variables > Actions):
-  secret   GCP_WORKLOAD_IDENTITY_PROVIDER = projects/$NUMERO/locations/global/workloadIdentityPools/$POOL/providers/$PROVEDOR
-  secret   GCP_SA_EMAIL                   = $SA_DEPLOY
-  variable GCP_PROJECT_ID                 = $PROJETO
-  variable GCP_BUCKET                     = $BUCKET
+Pronto. Chaves para o Bitwarden Secrets Manager (projeto puxa-capivara; o GitHub guarda só o BWS_ACCESS_TOKEN):
+  GCP_WORKLOAD_IDENTITY_PROVIDER = projects/$NUMERO/locations/global/workloadIdentityPools/$POOL/providers/$PROVEDOR
+  GCP_SA_EMAIL                   = $SA_DEPLOY
+Projeto ($PROJETO) e bucket ($BUCKET) ficam escritos nos workflows de deploy.
 FIM

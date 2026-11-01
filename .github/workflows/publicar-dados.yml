@@ -1,5 +1,5 @@
 # Copia o pacote de dados do site (site-web.tar.gz, guardado com Git LFS no branch dados-site) para o
-# Cloud Storage. O site lê do bucket da variável GCP_BUCKET, pasta web/.
+# Cloud Storage. O site lê do bucket puxa-capivara-dados, pasta web/.
 # Rodar à mão: Actions > Publicar dados do site > Run workflow.
 # Mais tarde, o pipeline no Cloud Run Job grava direto no bucket e este workflow deixa de ser necessário.
 name: Publicar dados do site
@@ -16,11 +16,17 @@ permissions:
   contents: read
   id-token: write
 
+env:
+  PROJETO: puxa-capivara-513419
+  BUCKET: puxa-capivara-dados
+
 jobs:
   publicar:
-    if: vars.GCP_PROJECT_ID != ''
+    if: github.repository == 'BrunodePauloAlmeida/puxa-capivara'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v7
+
       - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref }}
@@ -34,17 +40,21 @@ jobs:
           test -f web/indice.json && test -f web/meta.json
           cat web/meta.json
 
+      - name: Segredos do Bitwarden
+        uses: ./.github/actions/segredos-bitwarden
+        with:
+          access_token: ${{ secrets.BWS_ACCESS_TOKEN }}
+          server_url: ${{ vars.BWS_SERVER_URL }}
+          chaves: GCP_WORKLOAD_IDENTITY_PROVIDER GCP_SA_EMAIL
+
       - uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SA_EMAIL }}
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SA_EMAIL }}
 
       - uses: google-github-actions/setup-gcloud@v3
 
       - name: Sincronizar com o bucket
-        env:
-          PROJETO: ${{ vars.GCP_PROJECT_ID }}
-          BUCKET: ${{ vars.GCP_BUCKET }}
         run: |
           gcloud storage rsync web "gs://$BUCKET/web" \
             --recursive --delete-unmatched-destination-objects --project "$PROJETO"
