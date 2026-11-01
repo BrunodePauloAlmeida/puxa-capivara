@@ -112,7 +112,8 @@ corrige o `fontes-de-dados.md` onde a pesquisa inicial estava errada ou incomple
 | Senador | 81 | 54 |
 | Deputado federal | 513 | 513 (303 são reeleições de quem está no cargo) |
 
-- 500 dos 513 deputados em exercício foram ligados à candidatura de 2026; os 13 restantes não disputaram a eleição.
+- 500 dos 513 deputados em exercício foram ligados à candidatura de 2026; os 13 restantes não aparecem entre os
+  candidatos de 2026 (12 conferidos um a um).
 - 49 dos 81 senadores em exercício foram ligados ao TSE 2026 (os outros não disputaram; a maioria tem mandato até 2031).
 - **Governadores:** 8 trocas inferidas (titular disputou Senado ou Presidência e o vice assumiu): AC, AM, ES, GO, MG,
   MT, PA e PB. No AM o vice também disputou outro cargo, então é preciso conferir quem governa hoje. Afastamentos
