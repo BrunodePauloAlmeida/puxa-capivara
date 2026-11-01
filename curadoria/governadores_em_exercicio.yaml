@@ -1,0 +1,12 @@
+# Quem governa cada estado hoje, quando a inferência automática errar.
+#
+# O pipeline parte dos governadores eleitos em 2022 e presume que quem disputou outro cargo em 2026 renunciou
+# até abril (desincompatibilização), passando o cargo ao vice. Isso não cobre morte, cassação, afastamento
+# judicial nem o caso de o vice também ter saído. Nesses casos, registre aqui, com a fonte.
+#
+# Exemplo:
+#   - uf: XX
+#     nome_civil: NOME COMPLETO COMO APARECE NO TSE
+#     partido: SIGLA
+#     motivo: "Vice assumiu em 05/04/2026 após renúncia do titular (Diário Oficial do Estado, 05/04/2026)"
+ajustes: []

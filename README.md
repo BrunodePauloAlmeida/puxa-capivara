@@ -10,14 +10,29 @@ e o que ele disse sobre os temas do momento.
 
 ## Status
 
-Fase 0: planejamento e validação das fontes. Ainda não há código.
+Fase 0: fontes validadas ao vivo ([relatório](docs/validacao-fontes.md)) e primeira versão do pipeline (`pipeline/`),
+que monta o cadastro mestre de políticos.
 
 ## Documentação
 
 - [Mapa de fontes de dados](docs/fontes-de-dados.md): APIs públicas gratuitas, o que cada uma entrega e limitações
 - [Roadmap](docs/roadmap.md): fases, entregas e riscos
 - [Arquitetura](docs/arquitetura.md): stack, modelo de dados e layout do PDF
-- [Decisões em aberto](docs/decisoes.md): escolhas de escopo e editoriais que precisam ser feitas
+- [Validação das fontes](docs/validacao-fontes.md): resultado dos testes ao vivo de cada fonte
+- [Decisões](docs/decisoes.md): escolhas de escopo e editoriais
+
+## Pipeline
+
+Python 3.13 + [uv](https://docs.astral.sh/uv/).
+
+```bash
+cd pipeline
+uv sync
+uv run pytest -q          # testes (sem rede)
+uv run puxa cadastro      # monta o cadastro mestre em dados/processado/cadastro/
+```
+
+Os dados baixados e gerados ficam em `dados/` (fora do Git). Correções manuais ficam em `curadoria/`.
 
 ## Licença
 
