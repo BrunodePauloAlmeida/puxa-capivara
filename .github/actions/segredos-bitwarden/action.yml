@@ -4,7 +4,7 @@ description: >-
   mascaradas nos logs. Falha se alguma chave pedida não existir ou estiver repetida.
 inputs:
   access_token:
-    description: Token da conta de máquina do Bitwarden (secret BWS_ACCESS_TOKEN do repositório)
+    description: Token da conta de máquina do Bitwarden (secret BITWARDEN_ACCESS_TOKEN do repositório)
     required: true
   chaves:
     description: Nomes das chaves no Bitwarden, separados por espaço ou quebra de linha

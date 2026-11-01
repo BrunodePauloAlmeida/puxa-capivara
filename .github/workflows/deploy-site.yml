@@ -1,6 +1,6 @@
 # Publica o site: imagem no Artifact Registry, nova revisão no Cloud Run e o Firebase Hosting na frente.
 # Roda a cada push na main que mexa no site, ou à mão (Actions > Deploy do site > Run workflow).
-# O GitHub guarda só o BWS_ACCESS_TOKEN; os segredos vêm do Bitwarden Secrets Manager. Detalhes: docs/deploy.md.
+# O GitHub guarda só o BITWARDEN_ACCESS_TOKEN; os segredos vêm do Bitwarden Secrets Manager. Detalhes: docs/deploy.md.
 name: Deploy do site
 
 on:
@@ -39,7 +39,7 @@ jobs:
       - name: Segredos do Bitwarden
         uses: ./.github/actions/segredos-bitwarden
         with:
-          access_token: ${{ secrets.BWS_ACCESS_TOKEN }}
+          access_token: ${{ secrets.BITWARDEN_ACCESS_TOKEN }}
           server_url: ${{ vars.BWS_SERVER_URL }}
           chaves: GCP_WORKLOAD_IDENTITY_PROVIDER GCP_SA_EMAIL
 
