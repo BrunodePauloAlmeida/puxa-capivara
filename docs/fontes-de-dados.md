@@ -1,8 +1,8 @@
 # Mapa de fontes de dados
 
-> Pesquisa feita em 31/10/2026. **Nenhuma API foi chamada ao vivo ainda**: a rede deste ambiente bloqueia os
-> domínios `*.leg.br`, `*.jus.br` e `*.gov.br`. Os dados abaixo vêm de documentação, código de projetos
-> abertos que usam essas APIs e notícias. A Fase 0 do roadmap valida cada fonte de verdade.
+> Pesquisa feita em 31/10/2026 e **validada ao vivo em 01/11/2026**. Os resultados dos testes, com IDs e números
+> reais, estão em [`validacao-fontes.md`](validacao-fontes.md), que prevalece sobre este documento onde houver
+> diferença.
 
 Legenda de confiança:
 - **Alta**: API oficial, estável, usada por projetos ativos em 2025–2026.
@@ -46,9 +46,8 @@ curadoria manual.
   - Conjuntos úteis: `votacoesVotos`, `votacoesOrientacoes`, `votacoesProposicoes`, `proposicoes`, `proposicoesAutores`,
     `eventosPresencaDeputados` (presença).
 - **Riscos conhecidos:**
-  - ⚠️ Um projeto da comunidade relatou (jan/2026) que `/votacoes/{id}/votos` **devolve lista vazia para votações
-    posteriores a maio/2024**. Se confirmado, os votos nominais vêm dos arquivos anuais `votacoesVotos-{ano}.csv`.
-    **Primeira coisa a testar na Fase 0.**
+  - ✅ Um projeto da comunidade relatou (jan/2026) que `/votacoes/{id}/votos` vinha vazio depois de maio/2024.
+    **Não se confirmou**: os votos da PEC 221/2019 (maio/2026) vêm completos.
   - Limite de requisições (HTTP 429) em rajadas: usar cache, backoff e preferir arquivos em lote.
 - **Bônus para "investigações":** representações no Conselho de Ética são proposições do tipo `REP`, então dá para
   pegar pela mesma API.
@@ -63,8 +62,9 @@ curadoria manual.
   - `/processo/{id}` e sub-rotas: estrutura mais nova para matérias
   - `/plenario/lista/votacao/{ano}`, `/plenario/votacao/{codigo}/votos`
 - **Riscos conhecidos:** o Senado marca serviços que vão ser desligados com os headers HTTP `Deprecation`, `Sunset`
-  e `Link`. O coletor precisa **registrar esses headers** para avisar antes de quebrar. Parte das rotas `/materia`
-  está migrando para `/processo`.
+  e `Link`. **Confirmado:** 42 das 157 rotas estão depreciadas desde 18/03/2025, com desligamento previsto para
+  01/02/2026 (ainda respondem), incluindo `/plenario/...`, `/materia/...` e `/senador/{codigo}/votacoes`.
+  Usar as sucessoras `/votacao` e `/processo` (tabela em `validacao-fontes.md`). O coletor registra os headers.
 - **Cota parlamentar (CEAPS):** CSV anual no portal de transparência do Senado (não é API).
 - **Congresso Nacional** (sessões conjuntas, vetos, medidas provisórias): servido pela mesma infraestrutura do Senado.
 
@@ -88,13 +88,16 @@ curadoria manual.
   - `votacao_candidato_munzona_{ano}`: votos recebidos
   - `rede_social_candidato_{ano}`: perfis declarados em redes sociais (útil para monitorar declarações)
 - **Atenção:** para 2026, as contas do 2º turno ainda estão sendo entregues (prazo até meados de novembro).
+- **Atenção:** só o arquivo da eleição mais recente (2026) traz CPF e data de nascimento. Em 2018 e 2022 esses
+  campos vêm mascarados, então o cruzamento com eleições antigas é por nome civil + UF.
 
 ### 3.2 DivulgaCandContas
 - Site oficial com perfil de cada candidato: foto, bens, propostas de governo e **certidões criminais** em PDF.
 - Tem uma API JSON (`divulgacandcontas.tse.jus.br/divulga/rest/v1/...`) usada pelo próprio site, **sem
-  documentação oficial**. **Confiança:** Média (pode mudar sem aviso).
-- As **certidões criminais** que todo candidato entrega (Justiça Federal e Estadual, 1º e 2º grau) são uma fonte
-  oficial de processos criminais. Exigem extração de texto de PDF.
+  documentação oficial**. No teste de 01/11/2026 respondeu **HTTP 403**. **Confiança:** Baixa.
+- **Não é necessário:** as **certidões criminais** (Justiça Federal e Estadual, 1º e 2º grau), fotos, propostas de
+  governo e redes sociais também estão nos Dados Abertos do TSE, por UF. As certidões exigem extração de texto
+  de PDF e os arquivos são grandes (SP: 2,4 GB).
 
 ---
 
@@ -131,7 +134,7 @@ A solução é **combinar fontes oficiais estruturadas com curadoria humana**.
 | Fonte | O que traz | Acesso | Confiança |
 |---|---|---|---|
 | **TSE** (situação da candidatura, `motivo_cassacao`, certidões criminais) | Indeferimentos (Ficha Limpa), cassações, processos criminais declarados | CSV + PDF | Alta / Média |
-| **TCU**: contas julgadas irregulares (Cadirreg), lista para fins eleitorais, inabilitados | Gestores condenados pelo TCU | Consulta web em `contas.tcu.gov.br`; **falta confirmar** se há exportação | Média |
+| **TCU**: contas julgadas irregulares (Cadirreg), lista para fins eleitorais, inabilitados | Gestores condenados pelo TCU | API pública com exportação em CSV (`certidoes-apf.apps.tcu.gov.br`); **o firewall do TCU bloqueou o teste**, repetir a partir do GCP | Média |
 | **CGU** (Portal da Transparência): CEIS, CNEP, CEAF | Sanções e expulsões (mais empresas e servidores que políticos) | API gratuita com **chave** (cadastro por e-mail, header `chave-api-dados`) | Alta |
 | **Conselho de Ética** (Câmara e Senado) | Representações por quebra de decoro | APIs da Câmara e do Senado (tipo `REP`) | Alta |
 | **STF** (foro de deputados, senadores e presidente) | Inquéritos (INQ), ações penais (AP), petições | Busca por parte no portal (sem API); "Corte Aberta" tem CSV agregado | Baixa |
@@ -188,7 +191,7 @@ absolvido / arquivado), data e link para a fonte. Sem isso, não entra no PDF.
 
 ---
 
-## 8. Domínios que precisam ser liberados neste ambiente para a Fase 0
+## 8. Domínios usados (liberados no ambiente do Claude em 01/11/2026)
 
 ```
 dadosabertos.camara.leg.br
@@ -207,6 +210,9 @@ query.wikidata.org
 www.wikidata.org
 servicodados.ibge.gov.br
 www.lexml.gov.br
+sites.tcu.gov.br
+certidoes.apps.tcu.gov.br
+certidoes-apf.apps.tcu.gov.br
 ```
 
 ---
