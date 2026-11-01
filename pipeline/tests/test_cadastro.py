@@ -209,3 +209,89 @@ def test_ids_sao_estaveis_e_resolvem_homonimos():
     # Na execução seguinte, cada um mantém o seu, mesmo que a ordem mude.
     anteriores = {"camara:1": ids[0], "camara:2": ids[1]}
     assert cadastro.atribuir_ids(list(reversed(grupos)), anteriores) == [ids[1], ids[0]]
+
+
+def test_liga_nome_social_pelo_nome_de_urna_e_nascimento():
+    # A Câmara publica o nome civil; o TSE, o nome social. Sobram nascimento, UF e nome de urna.
+    dep, det = _dep(30, "ERIKA SANTOS SILVA", nascimento="1992-12-09")
+    dep["nome"] = det["ultimoStatus"]["nomeEleitoral"] = "Erika Hilton"
+    df26 = candidatos(
+        [
+            (
+                "1",
+                "SP",
+                "DEPUTADO FEDERAL",
+                "8",
+                "ERIKA HILTON",
+                "ERIKA HILTON",
+                "00000000515",
+                "09/12/1992",
+                "P",
+                "ELEITO POR QP",
+            )
+        ]
+    )
+    grupos, _ = cadastro.resolver(
+        cadastro.registros_camara([dep], {30: det}) + cadastro.registros_tse_2026(df26)
+    )
+    assert len(grupos) == 1
+
+
+def test_candidatura_a_deputado_estadual_tambem_serve_para_cruzar():
+    dep, det = _dep(40, "LUIZA ERUNDINA DE SOUSA", nascimento="1934-11-30")
+    df26 = candidatos(
+        [
+            (
+                "1",
+                "SP",
+                "DEPUTADO ESTADUAL",
+                "9",
+                "LUIZA ERUNDINA DE SOUSA",
+                "ERUNDINA",
+                "00000000604",
+                "30/11/1934",
+                "P",
+                "SUPLENTE",
+            )
+        ]
+    )
+    grupos, _ = cadastro.resolver(
+        cadastro.registros_camara([dep], {40: det}) + cadastro.registros_tse_2026(df26)
+    )
+    pessoas = cadastro.montar_pessoas(grupos, {})
+    assert len(pessoas) == 1 and pessoas[0].cpf == "00000000604"
+    # Candidatura estadual não vira papel no cadastro.
+    assert [(p.cargo, p.situacao) for p in pessoas[0].papeis] == [("deputado_federal", "em_exercicio")]
+
+
+def test_com_duas_candidaturas_em_2026_vale_a_que_tem_resultado():
+    df26 = candidatos(
+        [
+            (
+                "1",
+                "CE",
+                "DEPUTADO ESTADUAL",
+                "70",
+                "FULANA DE TAL",
+                "FULANA",
+                "00000000787",
+                "01/01/1990",
+                "P",
+                "#NULO",
+            ),
+            (
+                "1",
+                "CE",
+                "DEPUTADO FEDERAL",
+                "71",
+                "FULANA DE TAL",
+                "FULANA",
+                "00000000787",
+                "01/01/1990",
+                "P",
+                "ELEITO POR QP",
+            ),
+        ]
+    )
+    grupos, _ = cadastro.resolver(cadastro.registros_tse_2026(df26))
+    assert cadastro.montar_pessoas(grupos, {})[0].tse_sq_2026 == "71"
