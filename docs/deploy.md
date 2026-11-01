@@ -17,8 +17,9 @@ navegador ──> Firebase Hosting (CDN, HTTPS, domínio)
 
 - **GitHub Actions** constrói a imagem, envia para o **Artifact Registry** e publica no Cloud Run. Ele entra no
   GCP pela **Workload Identity Federation**, sem chave de conta de serviço guardada em lugar nenhum.
-- Os dados chegam ao bucket pelo workflow **Publicar dados do site**, que copia o pacote de uma release do GitHub.
-  Mais tarde, o pipeline roda como Cloud Run Job e grava direto no bucket.
+- Os dados chegam ao bucket pelo workflow **Publicar dados do site**, que copia o pacote `site-web.tar.gz` guardado
+  com Git LFS no branch `dados-site` (fora da `main`). Mais tarde, o pipeline roda como Cloud Run Job e grava
+  direto no bucket.
 - O bucket é privado: só o Cloud Run lê. Fotos, PDFs e a busca saem com cabeçalho de cache, e a CDN do Firebase
   guarda as respostas.
 
@@ -180,7 +181,7 @@ Enquanto `GCP_PROJECT_ID` estiver vazia, os workflows de deploy são pulados, se
 ## 9. Publicar
 
 1. Faça o merge do PR do site na `main`. O workflow **Deploy do site** roda sozinho: imagem, Cloud Run e Firebase.
-2. Em **Actions** > **Publicar dados do site** > **Run workflow**, deixe `dados-site-v1` e rode. Isso copia os
+2. Em **Actions** > **Publicar dados do site** > **Run workflow**, deixe `dados-site` e rode. Isso copia os
    dados para o bucket.
 3. Abra `https://SEU_PROJETO.web.app`.
 
@@ -215,15 +216,13 @@ alerta de gasto.
 
 ## Atualizar os dados
 
-Hoje: rodar o pipeline (`uv run puxa ... && uv run puxa site`), empacotar `dados/site/web` em `site-web.tar.gz`,
-anexar a uma nova release do GitHub e rodar **Publicar dados do site** com o nome dela.
+Hoje: rodar o pipeline (`uv run puxa ...` e depois `uv run puxa site`), empacotar `dados/site/web` em
+`site-web.tar.gz`, substituir o arquivo no branch `dados-site` (Git LFS) e rodar **Publicar dados do site**.
 
 ```bash
 tar -czf site-web.tar.gz -C dados/site/web .
 ```
 
-```bash
-gh release create dados-site-AAAA-MM-DD site-web.tar.gz --prerelease --title "Dados do site AAAA-MM-DD"
-```
+Cada execução baixa uns 100 MB do Git LFS, o que conta na cota mensal de transferência LFS da conta do GitHub.
 
 Na Sprint 3 do roadmap, o pipeline passa a rodar no Cloud Run Job e grava direto no bucket.
