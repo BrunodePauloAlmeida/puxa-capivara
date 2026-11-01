@@ -359,7 +359,9 @@ def resolver(registros: list[Registro]) -> tuple[list[list[Registro]], list[Pend
 # --------------------------------------------------------------------------------------------------------------
 # Montagem das pessoas e IDs estáveis
 
-_PRIORIDADE_NOME_URNA = ["tse2026", "camara", "senado", "tse2022", "curadoria"]
+# Nome de exibição: o nome parlamentar ("Hugo Motta") é melhor que o nome de urna do TSE, que às vezes é só
+# o primeiro nome ("HUGO"). O TSE fica para quem não tem mandato no Congresso.
+_PRIORIDADE_NOME_URNA = ["camara", "senado", "tse2026", "tse2022", "curadoria"]
 _PRIORIDADE_NOME_CIVIL = ["tse2026", "camara", "senado", "tse2022", "curadoria"]
 
 

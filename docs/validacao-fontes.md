@@ -122,3 +122,52 @@ corrige o `fontes-de-dados.md` onde a pesquisa inicial estava errada ou incomple
 - Lições incorporadas ao código: cruzar também com candidaturas a deputado estadual (vários deputados federais
   disputaram vaga estadual), aceitar nome social pelo nome de urna e aproximar grafias (Souza/Sousa,
   Thereza/Tereza).
+
+## Votações-chave (coletadas em 01/11/2026)
+
+Lista curada em `curadoria/votacoes_chave.yaml`; coleta com `uv run puxa votacoes`. O placar calculado a partir
+dos votos individuais bate com o placar oficial de cada votação. O desfecho vem do processo no Senado.
+
+| Tema | Câmara (principal) | Senado (principal) | Desfecho |
+|---|---|---|---|
+| Reforma Tributária (PEC 45/2019) | `2196833-326`, 06/07/2023: 382 a 118 | `6773`, 08/11/2023: 53 a 24 | EC 132/2023 |
+| Arcabouço fiscal (PLP 93/2023) | `2357053-47`, 23/05/2023: 372 a 108 | `6714`, 21/06/2023 | LC 200/2023 |
+| Marco temporal (PL 490/2007 e PL 2903/2023) | `345311-270`, 30/05/2023: 283 a 155 | `6756`, 27/09/2023 | Lei 14.701/2023, com veto parcial |
+| Isenção do IR até R$ 5 mil (PL 1087/2025) | `2487436-169`, 01/10/2025: 493 a 0 | sem votação nominal (aprovado em 05/11/2025) | Lei 15.270/2025 |
+| PEC da Blindagem (PEC 3/2021) | `2270800-135`, 16/09/2025: 353 a 134 | rejeitada na CCJ em 24/09/2025 | rejeitada |
+| Licenciamento ambiental (PL 2159/2021) | `257161-454`, 17/07/2025: 267 a 116 | `6935`, 21/05/2025 | Lei 15.190/2025, com veto parcial |
+| Dosimetria do 8 de janeiro (PL 2162/2023) | `2358548-89`, 10/12/2025: 291 a 148 | `7041`, 17/12/2025: 48 a 25 | Lei 15.402/2026 (situação no Senado: "vetada") |
+| Fim da escala 6x1 (PEC 221/2019) | `2233802-424`, 27/05/2026: 472 a 22 | `7106`, 14/10/2026: 75 a 1 | EC 141/2026 |
+
+Observações:
+- O total de registros da Câmara inclui quem presidia a sessão ("Artigo 17"), que não vota.
+- A Câmara só lista quem registrou voto. Quem não aparece estava ausente ou não tinha mandato na data; o PDF
+  precisa dizer "não votou" sem afirmar o motivo.
+- O Senado lista os 81 senadores, com o motivo da ausência. As siglas vêm da tabela oficial
+  `/plenario/lista/tiposComparecimento`.
+- Orientação de bancada (Câmara): resolvida para partidos isolados e federações. Os blocos aparecem abreviados
+  ("Bl UniPpPsd...") e ainda ficam sem correspondência.
+
+## Produção legislativa (coletada em 01/11/2026)
+
+Coleta com `uv run puxa producao`. Janela: projetos apresentados desde 01/02/2019. Tipos: PL, PLP, PEC, PDL e
+projeto de resolução (PRC na Câmara, PRS no Senado).
+
+| | Câmara (513) | Senado (81) |
+|---|---|---|
+| Projetos (autoria e coautoria) | 51.638; mediana 66 por deputado | 14.279; mediana 166 por senador |
+| Como primeiro autor | mediana 37 | mediana 54 |
+| Viraram norma, como primeiro autor | 375 no total; máximo 18 por pessoa | 291 no total; máximo 17 |
+
+Decisões e limitações:
+- **O número comparável entre as Casas é "como primeiro autor".** Na Câmara, assinaturas de apoio a PECs (são
+  necessárias 171) vêm com `proponente = 0` e **não contam** como autoria. Por isso os totais do pipeline são
+  menores que os do filtro `idDeputadoAutor` da API (ex.: Luiz Carlos Motta, PL-SP, 66 contra 94; a diferença é
+  exatamente o número de apoios). No Senado, todos os signatários aparecem como autores, sem distinção.
+- **Número da lei:** o arquivo da Câmara quase nunca traz a norma gerada (o último despacho só a cita em 30 de
+  326 casos em 2023, e `urnFinal` vem vazio). O pipeline busca a norma no processo do Senado para os destaques:
+  551 de 565 destaques têm o número; os 14 sem número são resoluções da Câmara (PRC), que não passam pelo Senado.
+- **Projetos apensados:** quando um projeto é anexado a outro que vira lei, só o principal aparece como
+  "Transformado em Norma Jurídica". O autor do apensado não recebe crédito.
+- **Quem mudou de Casa** só tem contada a produção da Casa em que está agora.
+- Dois senadores em exercício aparecem com zero projetos no período (suplentes que assumiram recentemente).
