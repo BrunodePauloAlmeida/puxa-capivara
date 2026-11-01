@@ -20,7 +20,8 @@ navegador ──> Firebase Hosting (CDN, HTTPS, domínio)
 ```
 
 - **GitHub Actions** constrói a imagem, envia para o **Artifact Registry** e publica no Cloud Run. Ele entra no
-  GCP pela **Workload Identity Federation**, sem chave de conta de serviço guardada em lugar nenhum.
+  GCP pela **Workload Identity Federation**, sem chave de conta de serviço guardada em lugar nenhum. Os dados da
+  federação vêm do **Bitwarden Secrets Manager**; o GitHub só guarda o token do Bitwarden.
 - Os dados chegam ao bucket pelo workflow **Publicar dados do site**, que copia o pacote `site-web.tar.gz` guardado
   com Git LFS no branch `dados-site` (fora da `main`). Mais tarde, o pipeline roda como Cloud Run Job e grava
   direto no bucket.
@@ -66,7 +67,7 @@ Console > **Cloud Storage** > **Buckets** > **Criar**:
 
 | Campo | Valor |
 |---|---|
-| Nome | `puxa-capivara-dados` (ou outro; o nome vai na variável `GCP_BUCKET` do passo 8) |
+| Nome | `puxa-capivara-dados` (se usar outro, troque `BUCKET` nos dois workflows de deploy) |
 | Tipo de local | Região: `southamerica-east1 (São Paulo)` |
 | Classe | Standard |
 | Acesso | Marque **Aplicar a prevenção do acesso público**; controle de acesso **Uniforme** |
@@ -178,25 +179,30 @@ saídas:
 4. No menu do Firebase, abra **Hosting** > **Vamos começar** e avance pelas telas (não precisa rodar os comandos
    que ele mostra). Isso cria o site `SEU_PROJETO.web.app`.
 
-## 8. Segredos e variável no GitHub
+## 8. Segredos: Bitwarden Secrets Manager, e só o token no GitHub
 
-Repositório no GitHub > **Settings** > **Secrets and variables** > **Actions**.
+Os segredos ficam no **Bitwarden Secrets Manager**, que é o cofre oficial do projeto. O GitHub guarda uma coisa só: o
+token de acesso ao Bitwarden. A cada execução, os workflows leem os segredos pelo nome
+(`.github/actions/segredos-bitwarden`), com a CLI oficial `bws` e checksum conferido, e os mascaram nos logs.
 
-Aba **Secrets** > **New repository secret**:
+No Bitwarden, projeto **puxa-capivara**, com uma **conta de máquina** que tenha leitura nele:
 
-| Nome | Valor |
+| Chave (nome exato) | Valor |
 |---|---|
 | `GCP_WORKLOAD_IDENTITY_PROVIDER` | `projects/NUMERO_DO_PROJETO/locations/global/workloadIdentityPools/github/providers/github-actions` |
 | `GCP_SA_EMAIL` | `github-deploy@SEU_PROJETO.iam.gserviceaccount.com` |
 
-Aba **Variables** > **New repository variable**:
+No GitHub, em **Settings** > **Secrets and variables** > **Actions** > **New repository secret**:
 
 | Nome | Valor |
 |---|---|
-| `GCP_PROJECT_ID` | `SEU_PROJETO` |
-| `GCP_BUCKET` | `puxa-capivara-dados` |
+| `BWS_ACCESS_TOKEN` | token da conta de máquina do Bitwarden |
 
-Enquanto `GCP_PROJECT_ID` estiver vazia, os workflows de deploy são pulados, sem erro.
+Se a organização no Bitwarden estiver na nuvem europeia, crie também a **variável** `BWS_SERVER_URL` com o valor
+`https://vault.bitwarden.eu`.
+
+O ID do projeto (`puxa-capivara-513419`) e o nome do bucket (`puxa-capivara-dados`) não são segredo e ficam
+escritos nos próprios workflows.
 
 ## 9. Publicar
 
@@ -206,6 +212,9 @@ Enquanto `GCP_PROJECT_ID` estiver vazia, os workflows de deploy são pulados, se
 3. Abra `https://SEU_PROJETO.web.app`.
 
 Se o deploy rodou antes do passo 8, rode de novo à mão: **Actions** > **Deploy do site** > **Run workflow**.
+
+No projeto `puxa-capivara-513419`, a primeira publicação (dados, imagem, Cloud Run e Firebase) foi feita pelo
+terminal em 01/11/2026. A partir do merge, o GitHub Actions assume.
 
 ## 10. Depois (opcional)
 
@@ -227,6 +236,9 @@ alerta de gasto.
 
 | Sintoma | Causa provável |
 |---|---|
+| `falta o secret BWS_ACCESS_TOKEN` | Secret não cadastrado no repositório (passo 8) |
+| `Chaves ausentes ou repetidas no Bitwarden` | Nome da chave diferente do esperado, chave em outro projeto, ou conta de máquina sem acesso ao projeto |
+| `bws` falha com erro de autenticação | Token vencido ou revogado, ou organização na nuvem europeia sem a variável `BWS_SERVER_URL` |
 | `Permission 'iam.serviceAccounts.getAccessToken' denied` no passo de autenticação | Passo 5.4 (conceder acesso) faltando, ou condição com o nome do repositório errado |
 | `denied: Permission "artifactregistry.repositories.uploadArtifacts"` | Repositório não se chama `puxa-capivara`, está em outra região, ou falta o papel de gravador |
 | `Permission 'iam.serviceaccounts.actAs' denied` no Cloud Run | Falta Service Account User para `github-deploy` |

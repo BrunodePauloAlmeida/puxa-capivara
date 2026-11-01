@@ -1,6 +1,6 @@
 # Publica o site: imagem no Artifact Registry, nova revisão no Cloud Run e o Firebase Hosting na frente.
 # Roda a cada push na main que mexa no site, ou à mão (Actions > Deploy do site > Run workflow).
-# Configuração no GCP e no GitHub: docs/deploy.md.
+# O GitHub guarda só o BWS_ACCESS_TOKEN; os segredos vêm do Bitwarden Secrets Manager. Detalhes: docs/deploy.md.
 name: Deploy do site
 
 on:
@@ -11,6 +11,7 @@ on:
       - "firebase.json"
       - "infra/firebase/**"
       - ".github/workflows/deploy-site.yml"
+      - ".github/actions/segredos-bitwarden/**"
   workflow_dispatch:
 
 permissions:
@@ -21,24 +22,31 @@ concurrency:
   group: deploy-site
   cancel-in-progress: false
 
+# Configuração pública (não é segredo).
 env:
+  PROJETO: puxa-capivara-513419
   REGIAO: southamerica-east1
   SERVICO: puxa-capivara-site
-  PROJETO: ${{ vars.GCP_PROJECT_ID }}
-  BUCKET: ${{ vars.GCP_BUCKET }}
+  BUCKET: puxa-capivara-dados
 
 jobs:
   deploy:
-    # Enquanto o GCP não estiver configurado (variável GCP_PROJECT_ID vazia), o job é pulado.
-    if: vars.GCP_PROJECT_ID != ''
+    if: github.repository == 'BrunodePauloAlmeida/puxa-capivara'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
 
+      - name: Segredos do Bitwarden
+        uses: ./.github/actions/segredos-bitwarden
+        with:
+          access_token: ${{ secrets.BWS_ACCESS_TOKEN }}
+          server_url: ${{ vars.BWS_SERVER_URL }}
+          chaves: GCP_WORKLOAD_IDENTITY_PROVIDER GCP_SA_EMAIL
+
       - uses: google-github-actions/auth@v3
         with:
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SA_EMAIL }}
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SA_EMAIL }}
 
       - uses: google-github-actions/setup-gcloud@v3
 
@@ -72,3 +80,11 @@ jobs:
 
       - name: Firebase Hosting
         run: npx --yes firebase-tools@15.34.2 deploy --only hosting --project "$PROJETO" --non-interactive
+
+      - name: Conferir o site
+        run: |
+          for rota in "/" "/api/busca?q=lula" "/ficha/lula"; do
+            codigo=$(curl -s -o /dev/null -w "%{http_code}" "https://$PROJETO.web.app$rota")
+            echo "$codigo $rota"
+            [ "$codigo" = 200 ]
+          done
