@@ -37,6 +37,11 @@ jobs:
         run: |
           mkdir web
           tar -xzf bundle/site-web.tar.gz -C web
+          # Packages from before the English translation still use the Portuguese keys: convert them.
+          if [ -f web/indice.json ]; then
+            python3 infra/convert-site-data.py web web-en
+            rm -rf web && mv web-en web
+          fi
           test -f web/index.json && test -f web/meta.json
           cat web/meta.json
 
