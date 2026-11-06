@@ -1,15 +1,17 @@
-# Dados do site (branch `dados-site`)
+# Site data (`site-data` branch)
 
-Pacote que o site lê do Cloud Storage, guardado aqui com Git LFS para não pesar na `main`.
+The package the site reads from Cloud Storage, kept here with Git LFS so it doesn't weigh down `main`.
 
-- `site-web.tar.gz`: saída de `uv run puxa site` (pasta `dados/site/web/`): `meta.json`, `indice.json`,
-  `pessoas/{id}.json`, `fotos/{id}.jpg` e `pdf/{id}.pdf`.
-- Versão atual: v1, gerada em 01/11/2026, 862 pessoas. Rascunho: dados em validação.
+- `site-web.tar.gz`: output of `uv run puxa site` (the `data/site/web/` folder). The current package predates the
+  English translation and still uses the Portuguese format (`indice.json`, `pessoas/`, `fotos/`); the publish
+  workflow converts it. New packages have `meta.json`, `index.json`, `people/{id}.json`, `photos/{id}.jpg` and
+  `pdf/{id}.pdf`.
+- Current version: v1, generated on November 1, 2026, 862 people. Draft: data still being validated.
 
-Para publicar no bucket: Actions > **Publicar dados do site** > Run workflow (ver `docs/deploy.md` na `main`).
+To publish to the bucket: Actions > **Publish site data** > Run workflow (see `docs/deploy.md` on `main`).
 
-Para atualizar: gerar de novo com o pipeline, substituir `site-web.tar.gz` neste branch e fazer push.
+To update: regenerate with the pipeline, replace `site-web.tar.gz` on this branch and push.
 
 ```bash
-tar -czf site-web.tar.gz -C dados/site/web .
+tar -czf site-web.tar.gz -C data/site/web .
 ```
