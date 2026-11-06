@@ -1,4 +1,4 @@
-# Imagem do site para o Cloud Run (Next.js em modo standalone).
+# Site image for Cloud Run (Next.js in standalone mode).
 FROM node:22-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./

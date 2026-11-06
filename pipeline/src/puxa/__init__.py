@@ -1,1 +1,1 @@
-"""Pipeline de dados do puxa-capivara."""
+"""puxa-capivara data pipeline."""

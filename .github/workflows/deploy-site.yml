@@ -1,7 +1,7 @@
-# Publica o site: imagem no Artifact Registry, nova revisão no Cloud Run e o Firebase Hosting na frente.
-# Roda a cada push na main que mexa no site, ou à mão (Actions > Deploy do site > Run workflow).
-# O GitHub guarda só o BITWARDEN_ACCESS_TOKEN; os segredos vêm do Bitwarden Secrets Manager. Detalhes: docs/deploy.md.
-name: Deploy do site
+# Publishes the site: image in Artifact Registry, a new Cloud Run revision, and Firebase Hosting in front.
+# Runs on every push to main that touches the site, or by hand (Actions > Deploy site > Run workflow).
+# GitHub stores only BITWARDEN_ACCESS_TOKEN; the secrets come from Bitwarden Secrets Manager. Details: docs/deploy.md.
+name: Deploy site
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
       - "firebase.json"
       - "infra/firebase/**"
       - ".github/workflows/deploy-site.yml"
-      - ".github/actions/segredos-bitwarden/**"
+      - ".github/actions/bitwarden-secrets/**"
   workflow_dispatch:
 
 permissions:
@@ -22,11 +22,11 @@ concurrency:
   group: deploy-site
   cancel-in-progress: false
 
-# Configuração pública (não é segredo).
+# Public configuration (not secret).
 env:
-  PROJETO: puxa-capivara-513419
-  REGIAO: southamerica-east1
-  SERVICO: puxa-capivara-site
+  PROJECT: puxa-capivara-513419
+  REGION: southamerica-east1
+  SERVICE: puxa-capivara-site
   BUCKET: puxa-capivara-dados
 
 jobs:
@@ -36,12 +36,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Segredos do Bitwarden
-        uses: ./.github/actions/segredos-bitwarden
+      - name: Bitwarden secrets
+        uses: ./.github/actions/bitwarden-secrets
         with:
           access_token: ${{ secrets.BITWARDEN_ACCESS_TOKEN }}
           server_url: ${{ vars.BWS_SERVER_URL }}
-          chaves: GCP_WORKLOAD_IDENTITY_PROVIDER GCP_SA_EMAIL
+          keys: GCP_WORKLOAD_IDENTITY_PROVIDER GCP_SA_EMAIL
 
       - uses: google-github-actions/auth@v3
         with:
@@ -50,22 +50,22 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v3
 
-      - name: Construir e enviar a imagem
+      - name: Build and push the image
         run: |
-          IMAGEM="$REGIAO-docker.pkg.dev/$PROJETO/puxa-capivara/site:$GITHUB_SHA"
-          echo "IMAGEM=$IMAGEM" >> "$GITHUB_ENV"
-          gcloud auth configure-docker "$REGIAO-docker.pkg.dev" --quiet
-          docker build -t "$IMAGEM" site
-          docker push "$IMAGEM"
+          IMAGE="$REGION-docker.pkg.dev/$PROJECT/puxa-capivara/site:$GITHUB_SHA"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
+          docker build -t "$IMAGE" site
+          docker push "$IMAGE"
 
-      - name: Nova revisão no Cloud Run
+      - name: New Cloud Run revision
         run: |
-          gcloud run deploy "$SERVICO" \
-            --project "$PROJETO" \
-            --region "$REGIAO" \
-            --image "$IMAGEM" \
-            --service-account "puxa-site@$PROJETO.iam.gserviceaccount.com" \
-            --set-env-vars "PUXA_BUCKET=$BUCKET,PUXA_PREFIXO=web" \
+          gcloud run deploy "$SERVICE" \
+            --project "$PROJECT" \
+            --region "$REGION" \
+            --image "$IMAGE" \
+            --service-account "puxa-site@$PROJECT.iam.gserviceaccount.com" \
+            --set-env-vars "PUXA_BUCKET=$BUCKET,PUXA_PREFIX=web" \
             --port 8080 \
             --memory 512Mi \
             --cpu 1 \
@@ -79,12 +79,12 @@ jobs:
           node-version: 22
 
       - name: Firebase Hosting
-        run: npx --yes firebase-tools@15.34.2 deploy --only hosting --project "$PROJETO" --non-interactive
+        run: npx --yes firebase-tools@15.34.2 deploy --only hosting --project "$PROJECT" --non-interactive
 
-      - name: Conferir o site
+      - name: Check the site
         run: |
-          for rota in "/" "/api/busca?q=lula" "/ficha/lula"; do
-            codigo=$(curl -s -o /dev/null -w "%{http_code}" "https://$PROJETO.web.app$rota")
-            echo "$codigo $rota"
-            [ "$codigo" = 200 ]
+          for route in "/" "/api/busca?q=lula" "/ficha/lula"; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" "https://$PROJECT.web.app$route")
+            echo "$code $route"
+            [ "$code" = 200 ]
           done

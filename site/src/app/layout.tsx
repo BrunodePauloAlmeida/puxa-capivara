@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   title: { default: "puxa-capivara", template: "%s · puxa-capivara" },
   description:
     "Busque um político pelo nome e veja, em uma página, como votou nos projetos mais importantes e o que propôs. Dados oficiais da Câmara, do Senado e do TSE.",
-  // Rascunho v1: dados ainda em validação, então o site fica fora dos buscadores por enquanto.
+  // Draft v1: data still being validated, so the site stays out of search engines for now.
   robots: { index: false, follow: false },
 };
 
@@ -23,17 +23,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
       <body>
-        <header className="topo">
-          <div className="conteudo topo-linha">
-            <Link href="/" className="marca">
+        <header className="site-header">
+          <div className="container site-header-row">
+            <Link href="/" className="brand">
               puxa-capivara
             </Link>
-            <span className="selo">rascunho v1</span>
+            <span className="badge">rascunho v1</span>
           </div>
         </header>
-        <main className="conteudo">{children}</main>
-        <footer className="rodape">
-          <div className="conteudo">
+        <main className="container">{children}</main>
+        <footer className="site-footer">
+          <div className="container">
             <p>
               Dados abertos da Câmara dos Deputados, do Senado Federal e do Tribunal Superior Eleitoral. Cada
               informação vem de fonte oficial.

@@ -1,11 +1,11 @@
-"""Exporta os dados do site (v1) a partir do cadastro, das votações, da produção, das fotos e dos PDFs já gerados.
+"""Exports the site data (v1) from the registry, votes, bills, photos and the PDFs already generated.
 
-Saída em dados/site/web/ (é o que vai para o Cloud Storage):
-  meta.json            versão, data de geração e contagens por cargo
-  indice.json          uma linha por pessoa, para a busca (nome, cargo, partido-UF, texto de busca)
-  pessoas/{id}.json    o mesmo conteúdo da ficha em PDF, sem a foto embutida
-  fotos/{id}.jpg       foto reduzida (até 320 px de altura)
-  pdf/{id}.pdf         o PDF da ficha (gerado antes com `uv run puxa ficha --todos`)
+Output in data/site/web/ (this is what goes to Cloud Storage):
+  meta.json            version, generation date and counts per role
+  index.json           one row per person, for search (name, role, party-state, search text)
+  people/{id}.json     the same content as the PDF profile, without the embedded photo
+  photos/{id}.jpg      reduced photo (up to 320 px tall)
+  pdf/{id}.pdf         the profile PDF (generated earlier with `uv run puxa profile --all`)
 """
 
 from __future__ import annotations
@@ -18,116 +18,120 @@ from pathlib import Path
 
 from PIL import Image
 
-from puxa import ficha
-from puxa.texto import normalizar_nome
+from puxa import profile
+from puxa.text import normalize_name
 
 log = logging.getLogger(__name__)
 
-ALTURA_FOTO = 320
-ORDEM_CARGOS = ["presidente", "governador", "senador", "deputado_federal"]
+PHOTO_HEIGHT = 320
+ROLE_ORDER = ["president", "governor", "senator", "federal_deputy"]
 
 
-def cargo_curto(linhas_de_cargo: list[str]) -> str:
+def short_role(role_lines: list[str]) -> str:
     """'Deputada federal em exercício · PSOL-SP · reeleita em 2026' -> 'Deputada federal'."""
-    if not linhas_de_cargo:
+    if not role_lines:
         return ""
-    return linhas_de_cargo[0].split(" · ")[0].removesuffix(" em exercício")
+    return role_lines[0].split(" · ")[0].removesuffix(" em exercício")
 
 
-def texto_de_busca(*partes: str | None) -> str:
-    """Nome de urna e nome civil normalizados (sem acento, minúsculas), sem repetir palavras."""
-    vistos: list[str] = []
-    for parte in partes:
-        for palavra in normalizar_nome(parte or "").lower().split():
-            if palavra not in vistos:
-                vistos.append(palavra)
-    return " ".join(vistos)
+def search_text(*parts: str | None) -> str:
+    """Ballot name and civil name normalized (no accents, lowercase), without repeating words."""
+    seen: list[str] = []
+    for part in parts:
+        for word in normalize_name(part or "").lower().split():
+            if word not in seen:
+                seen.append(word)
+    return " ".join(seen)
 
 
-def linha_do_indice(ctx: dict, cargos: list[str], uf: str | None, tem_foto: bool) -> dict:
+def index_row(ctx: dict, roles: list[str], state: str | None, has_photo: bool) -> dict:
     return {
         "id": ctx["id"],
-        "nome": ctx["nome"],
-        "cargo": cargo_curto(ctx["cargos"]),
-        "partido_uf": ctx["partido_uf"],
-        "uf": uf,
-        "cargos": cargos,
-        "foto": tem_foto,
-        "iniciais": ctx["iniciais"],
-        # Busca só pelo nome civil que a ficha mostra (o do TSE), pelo mesmo motivo da ficha: nome social.
-        "busca": texto_de_busca(ctx["nome"], ctx["nome_civil"]),
+        "name": ctx["name"],
+        "role": short_role(ctx["roles"]),
+        "party_state": ctx["party_state"],
+        "state": state,
+        "roles": roles,
+        "photo": has_photo,
+        "initials": ctx["initials"],
+        # Search only by the civil name the profile shows (the TSE's), for the same reason as the profile: social name.
+        "search": search_text(ctx["name"], ctx["civil_name"]),
     }
 
 
-def reduzir_foto(origem: Path, destino: Path, altura: int = ALTURA_FOTO) -> None:
-    with Image.open(origem) as img:
+def shrink_photo(source: Path, dest: Path, height: int = PHOTO_HEIGHT) -> None:
+    with Image.open(source) as img:
         img = img.convert("RGB")
-        if img.height > altura:
-            img = img.resize((round(img.width * altura / img.height), altura), Image.Resampling.LANCZOS)
-        img.save(destino, "JPEG", quality=82, optimize=True, progressive=True)
+        if img.height > height:
+            img = img.resize((round(img.width * height / img.height), height), Image.Resampling.LANCZOS)
+        img.save(dest, "JPEG", quality=82, optimize=True, progressive=True)
 
 
-def exportar(
-    dados: ficha.Dados,
-    pasta_fotos: Path,
-    pasta_pdf: Path,
-    destino: Path,
-    manifesto_fotos: dict | None = None,
-    hoje: date | None = None,
+def export(
+    data: profile.Dataset,
+    photos_dir: Path,
+    pdf_dir: Path,
+    dest: Path,
+    photo_manifest: dict | None = None,
+    today: date | None = None,
 ) -> dict:
-    hoje = hoje or date.today()
-    for sub in ("pessoas", "fotos", "pdf"):
-        (destino / sub).mkdir(parents=True, exist_ok=True)
+    today = today or date.today()
+    for sub in ("people", "photos", "pdf"):
+        (dest / sub).mkdir(parents=True, exist_ok=True)
 
-    papeis_por_pessoa: dict[str, list[dict]] = {}
-    for p in dados.papeis.iter_rows(named=True):
-        papeis_por_pessoa.setdefault(p["pessoa_id"], []).append(p)
+    roles_by_person: dict[str, list[dict]] = {}
+    for p in data.roles.iter_rows(named=True):
+        roles_by_person.setdefault(p["person_id"], []).append(p)
 
-    indice, sem_pdf = [], []
-    for pessoa_id in dados.pessoas["id"].to_list():
-        foto = pasta_fotos / f"{pessoa_id}.jpg"
-        tem_foto = foto.exists()
-        if tem_foto:
-            reduzir_foto(foto, destino / "fotos" / f"{pessoa_id}.jpg")
+    index, missing_pdf = [], []
+    for person_id in data.people["id"].to_list():
+        photo = photos_dir / f"{person_id}.jpg"
+        has_photo = photo.exists()
+        if has_photo:
+            shrink_photo(photo, dest / "photos" / f"{person_id}.jpg")
 
-        pdf = pasta_pdf / f"{pessoa_id}.pdf"
+        pdf = pdf_dir / f"{person_id}.pdf"
         if pdf.exists():
-            shutil.copyfile(pdf, destino / "pdf" / f"{pessoa_id}.pdf")
+            shutil.copyfile(pdf, dest / "pdf" / f"{person_id}.pdf")
         else:
-            sem_pdf.append(pessoa_id)
+            missing_pdf.append(person_id)
 
-        ctx = ficha.contexto(pessoa_id, dados, hoje=hoje, pasta_fotos=None, manifesto_fotos=manifesto_fotos)
-        ctx.pop("foto")
-        ctx["tem_foto"] = tem_foto
-        ctx["tem_pdf"] = pdf.exists()
-        (destino / "pessoas" / f"{pessoa_id}.json").write_text(
+        ctx = profile.context(person_id, data, today=today, photos_dir=None, photo_manifest=photo_manifest)
+        ctx.pop("photo")
+        ctx["has_photo"] = has_photo
+        ctx["has_pdf"] = pdf.exists()
+        (dest / "people" / f"{person_id}.json").write_text(
             json.dumps(ctx, ensure_ascii=False), encoding="utf-8"
         )
 
-        papeis = papeis_por_pessoa.get(pessoa_id, [])
-        cargos = sorted({p["cargo"] for p in papeis}, key=ORDEM_CARGOS.index)
-        principal = next((p for p in papeis if p["situacao"] == "em_exercicio"), papeis[0] if papeis else {})
-        indice.append(linha_do_indice(ctx, cargos, principal.get("uf"), tem_foto))
+        roles = roles_by_person.get(person_id, [])
+        role_codes = sorted({p["role"] for p in roles}, key=ROLE_ORDER.index)
+        main = next((p for p in roles if p["status"] == "in_office"), roles[0] if roles else {})
+        index.append(index_row(ctx, role_codes, main.get("state"), has_photo))
 
-    indice.sort(key=lambda r: r["busca"])
+    index.sort(key=lambda r: r["search"])
 
-    def contar(situacao: str) -> dict[str, int]:
-        pessoas_por_cargo = {c: set() for c in ORDEM_CARGOS}
-        for p in dados.papeis.filter(dados.papeis["situacao"] == situacao).iter_rows(named=True):
-            pessoas_por_cargo[p["cargo"]].add(p["pessoa_id"])
-        return {c: len(ids) for c, ids in pessoas_por_cargo.items()}
+    def count(status: str) -> dict[str, int]:
+        people_by_role = {c: set() for c in ROLE_ORDER}
+        for p in data.roles.filter(data.roles["status"] == status).iter_rows(named=True):
+            people_by_role[p["role"]].add(p["person_id"])
+        return {c: len(ids) for c, ids in people_by_role.items()}
 
     meta = {
-        "versao": ficha.VERSAO,
-        "gerado_em": hoje.isoformat(),
-        "pessoas": len(indice),
-        "em_exercicio": contar("em_exercicio"),
-        "eleitos_2026": contar("eleito_2026"),
-        "com_foto": sum(r["foto"] for r in indice),
-        "sem_pdf": sem_pdf,
+        "version": profile.VERSION,
+        "generated_at": today.isoformat(),
+        "people": len(index),
+        "in_office": count("in_office"),
+        "elected_2026": count("elected_2026"),
+        "with_photo": sum(r["photo"] for r in index),
+        "missing_pdf": missing_pdf,
     }
-    (destino / "indice.json").write_text(json.dumps(indice, ensure_ascii=False), encoding="utf-8")
-    (destino / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
-    if sem_pdf:
-        log.warning("%d pessoas sem PDF (rode `uv run puxa ficha --todos`): %s", len(sem_pdf), sem_pdf[:10])
+    (dest / "index.json").write_text(json.dumps(index, ensure_ascii=False), encoding="utf-8")
+    (dest / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
+    if missing_pdf:
+        log.warning(
+            "%d people without a PDF (run `uv run puxa profile --all`): %s",
+            len(missing_pdf),
+            missing_pdf[:10],
+        )
     return meta

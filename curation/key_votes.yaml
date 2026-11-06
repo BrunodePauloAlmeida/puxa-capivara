@@ -1,0 +1,116 @@
+# Key votes of the 2023–2027 legislature (decision D5, approved on 01/11/2026).
+#
+# Criteria: plenary roll-call vote, wide repercussion and high impact. Review every semester.
+# The IDs were checked against the Chamber and Senate APIs on 01/11/2026 (see docs/source-validation.md).
+#
+# Fields:
+#   summary        what the proposal does, in one neutral sentence (no adjectives). Review before publishing.
+#   yes_means      what a "Sim" vote means in the main roll call.
+#   chamber/senate plenary roll-call votes. "main: true" is the one that appears in the PDF; the others go to the
+#                  online page. "bill" only needs to be given when the number changes between the Houses.
+#   no_roll_call   when the House decided without recording individual votes, explains what happened.
+#   hot_topic      highlights the topic at the top of the PDF.
+
+key_votes:
+  - id: reforma-tributaria
+    title: Reforma Tributária
+    bill: PEC 45/2019
+    summary: >-
+      Substitui cinco tributos sobre o consumo (PIS, Cofins, IPI, ICMS e ISS) por um IVA dual: a CBS, federal, e o IBS,
+      de estados e municípios.
+    yes_means: a favor da reforma
+    chamber:
+      - {id: "2196833-326", date: 2023-07-06, description: "1º turno", main: true}
+      - {id: "2196833-373", date: 2023-07-07, description: "2º turno"}
+    senate:
+      - {id: "6773", date: 2023-11-08, description: "1º turno (substitutivo)", main: true}
+      - {id: "6777", date: 2023-11-08, description: "2º turno"}
+
+  - id: arcabouco-fiscal
+    title: Arcabouço fiscal
+    bill: PLP 93/2023
+    summary: >-
+      Substitui o teto de gastos por um regime que limita o crescimento da despesa a uma parcela do crescimento da
+      receita.
+    yes_means: a favor do novo regime fiscal
+    chamber:
+      - {id: "2357053-47", date: 2023-05-23, description: "texto-base", main: true}
+    senate:
+      - {id: "6714", date: 2023-06-21, description: "texto-base", main: true}
+
+  - id: marco-temporal
+    title: Marco temporal das terras indígenas
+    bill: PL 490/2007 (Câmara) / PL 2903/2023 (Senado)
+    summary: >-
+      Define que só podem ser demarcadas como terras indígenas as áreas ocupadas por esses povos em 5 de outubro
+      de 1988.
+    yes_means: a favor do marco temporal
+    chamber:
+      - {id: "345311-270", date: 2023-05-30, description: "texto-base", main: true, bill: PL 490/2007}
+    senate:
+      - {id: "6756", date: 2023-09-27, description: "texto-base", main: true, bill: PL 2903/2023}
+
+  - id: isencao-ir-5-mil
+    title: Isenção do IR até R$ 5 mil
+    bill: PL 1087/2025
+    summary: >-
+      Isenta do Imposto de Renda quem ganha até R$ 5 mil por mês e cria uma tributação mínima para rendas muito
+      altas.
+    yes_means: a favor da isenção
+    chamber:
+      - {id: "2487436-169", date: 2025-10-01, description: "texto-base", main: true}
+    senate: []
+    no_roll_call:
+      senate: Aprovado em 05/11/2025 sem registro de votação nominal.
+
+  - id: pec-da-blindagem
+    title: PEC da Blindagem
+    bill: PEC 3/2021
+    summary: >-
+      Exige autorização da Câmara ou do Senado para que deputados e senadores sejam processados criminalmente.
+    yes_means: a favor da PEC
+    chamber:
+      - {id: "2270800-135", date: 2025-09-16, description: "1º turno", main: true}
+      - {id: "2270800-160", date: 2025-09-16, description: "2º turno"}
+    senate: []
+    no_roll_call:
+      senate: Rejeitada na Comissão de Constituição e Justiça em 24/09/2025; não foi votada em plenário.
+
+  - id: licenciamento-ambiental
+    title: Lei geral do licenciamento ambiental
+    bill: PL 2159/2021
+    summary: >-
+      Cria regras gerais para o licenciamento ambiental, incluindo a licença por adesão e compromisso, concedida a
+      partir de declaração do empreendedor.
+    yes_means: a favor do projeto
+    chamber:
+      - {id: "257161-454", date: 2025-07-17, description: "emendas do Senado (votação final)", main: true}
+    senate:
+      - {id: "6935", date: 2025-05-21, description: "texto-base", main: true}
+
+  - id: dosimetria-8-de-janeiro
+    title: Redução de penas do 8 de janeiro (PL da Dosimetria)
+    bill: PL 2162/2023
+    summary: >-
+      Altera regras de cálculo e de progressão de penas, o que reduz as penas dos condenados pelos atos de 8 de
+      janeiro de 2023.
+    yes_means: a favor da redução das penas
+    chamber:
+      - {id: "2358548-89", date: 2025-12-10, description: "texto-base (substitutivo)", main: true}
+    senate:
+      - {id: "7041", date: 2025-12-17, description: "texto-base", main: true}
+
+  - id: fim-da-escala-6x1
+    title: Fim da escala 6x1
+    bill: PEC 221/2019
+    hot_topic: true
+    summary: >-
+      Reduz a duração máxima da semana de trabalho e garante dois dias de descanso semanal remunerado, sem redução
+      de salário.
+    yes_means: a favor do fim da escala 6x1
+    chamber:
+      - {id: "2233802-424", date: 2026-05-27, description: "1º turno", main: true}
+      - {id: "2233802-438", date: 2026-05-27, description: "2º turno"}
+    senate:
+      - {id: "7106", date: 2026-10-14, description: "1º turno", main: true}
+      - {id: "7107", date: 2026-10-14, description: "2º turno"}

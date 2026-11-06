@@ -1,93 +1,94 @@
-# Deploy do site (v1)
+# Site deploy (v1)
 
-Tudo pelo navegador: console do Google Cloud, console do Firebase e GitHub. Não precisa instalar `gcloud`.
-Leva uns 40 minutos na primeira vez. Depois disso, cada merge na `main` publica o site sozinho.
+Everything through the browser: the Google Cloud console, the Firebase console and GitHub. No need to install
+`gcloud`. It takes about 40 minutes the first time. After that, every merge into `main` publishes the site on
+its own.
 
-**Atalho pelo terminal:** com `gcloud` autenticado como dono do projeto, `infra/gcp-setup.sh` faz os passos 1 a 5
-(com permissões mais estreitas que as do console). Foi assim que o projeto `puxa-capivara-513419` foi montado
-em 01/11/2026: bucket `puxa-capivara-dados`, site em <https://puxa-capivara-513419.web.app>.
+**Terminal shortcut:** with `gcloud` authenticated as the project owner, `infra/gcp-setup.sh` does steps 1 to 5
+(with narrower permissions than the console ones). That is how the `puxa-capivara-513419` project was set up on
+November 1, 2026: bucket `puxa-capivara-dados`, site at <https://puxa-capivara-513419.web.app>.
 
-## Como fica no ar
+## How it runs
 
 ```
-navegador ──> Firebase Hosting (CDN, HTTPS, domínio)
-                 │  rewrite de todas as rotas
+browser ──> Firebase Hosting (CDN, HTTPS, domain)
+                 │  rewrite of every route
                  v
               Cloud Run: puxa-capivara-site (Next.js, São Paulo)
-                 │  lê com a conta de serviço puxa-site
+                 │  reads with the puxa-site service account
                  v
-              Cloud Storage: puxa-capivara-dados/web/  (índice, fichas em JSON, fotos, PDFs)
+              Cloud Storage: puxa-capivara-dados/web/  (index, JSON profiles, photos, PDFs)
 ```
 
-- **GitHub Actions** constrói a imagem, envia para o **Artifact Registry** e publica no Cloud Run. Ele entra no
-  GCP pela **Workload Identity Federation**, sem chave de conta de serviço guardada em lugar nenhum. Os dados da
-  federação vêm do **Bitwarden Secrets Manager**; o GitHub só guarda o token do Bitwarden.
-- Os dados chegam ao bucket pelo workflow **Publicar dados do site**, que copia o pacote `site-web.tar.gz` guardado
-  com Git LFS no branch `dados-site` (fora da `main`). Mais tarde, o pipeline roda como Cloud Run Job e grava
-  direto no bucket.
-- O bucket é privado: só o Cloud Run lê. Fotos, PDFs e a busca saem com cabeçalho de cache, e a CDN do Firebase
-  guarda as respostas.
+- **GitHub Actions** builds the image, pushes it to **Artifact Registry** and deploys it to Cloud Run. It signs
+  in to GCP through **Workload Identity Federation**, with no service account key stored anywhere. The federation
+  details come from **Bitwarden Secrets Manager**; GitHub only stores the Bitwarden token.
+- The data reaches the bucket through the **Publish site data** workflow, which copies the `site-web.tar.gz`
+  bundle stored with Git LFS on the `site-data` branch (outside `main`). Later, the pipeline runs as a Cloud Run
+  Job and writes straight to the bucket.
+- The bucket is private: only Cloud Run reads it. Photos, PDFs and search are served with cache headers, and the
+  Firebase CDN caches the responses.
 
-Nos passos abaixo, troque **`SEU_PROJETO`** pelo **ID** do projeto (não o nome). O ID aparece no seletor de
-projetos, no topo do console, e no painel inicial ("ID do projeto"). Anote também o **número do projeto**, que
-fica no mesmo painel.
+In the steps below, replace **`YOUR_PROJECT`** with the project **ID** (not the name). The ID appears in the
+project picker at the top of the console and on the dashboard ("Project ID"). Also write down the **project
+number**, which is on the same dashboard.
 
-Os nomes dos papéis aparecem em inglês ou em português, conforme o idioma do console. Por isso a lista traz os
-dois, mais o ID do papel, que também funciona na busca.
+The console labels below are the English ones. Role names appear in English or Portuguese depending on the
+console language, so the role tables list both, plus the role ID, which also works in the search box.
 
 ---
 
-## 1. Ativar as APIs
+## 1. Enable the APIs
 
-Abra o link abaixo, troque `SEU_PROJETO` no fim e clique em **Ativar**:
+Open the link below, replace `YOUR_PROJECT` at the end and click **Enable**:
 
 ```
-https://console.cloud.google.com/flows/enableapi?apiid=run.googleapis.com,artifactregistry.googleapis.com,iamcredentials.googleapis.com,sts.googleapis.com,storage.googleapis.com,firebase.googleapis.com,firebasehosting.googleapis.com&project=SEU_PROJETO
+https://console.cloud.google.com/flows/enableapi?apiid=run.googleapis.com,artifactregistry.googleapis.com,iamcredentials.googleapis.com,sts.googleapis.com,storage.googleapis.com,firebase.googleapis.com,firebasehosting.googleapis.com&project=YOUR_PROJECT
 ```
 
-São estas: Cloud Run, Artifact Registry, IAM Service Account Credentials, Security Token Service, Cloud Storage,
-Firebase Management e Firebase Hosting.
+These are: Cloud Run, Artifact Registry, IAM Service Account Credentials, Security Token Service, Cloud Storage,
+Firebase Management and Firebase Hosting.
 
-## 2. Repositório de imagens (Artifact Registry)
+## 2. Image repository (Artifact Registry)
 
-Console > **Artifact Registry** > **Repositórios** > **Criar repositório**:
+Console > **Artifact Registry** > **Repositories** > **Create repository**:
 
-| Campo | Valor |
+| Field | Value |
 |---|---|
-| Nome | `puxa-capivara` |
-| Formato | Docker |
-| Modo | Padrão |
-| Tipo de local | Região: `southamerica-east1 (São Paulo)` |
+| Name | `puxa-capivara` |
+| Format | Docker |
+| Mode | Standard |
+| Location type | Region: `southamerica-east1 (São Paulo)` |
 
-Opcional, para não acumular imagens: em **Política de limpeza**, mantenha as 10 versões mais recentes.
+Optional, to avoid piling up images: under **Cleanup policies**, keep the 10 most recent versions.
 
-## 3. Bucket dos dados (Cloud Storage)
+## 3. Data bucket (Cloud Storage)
 
-Console > **Cloud Storage** > **Buckets** > **Criar**:
+Console > **Cloud Storage** > **Buckets** > **Create**:
 
-| Campo | Valor |
+| Field | Value |
 |---|---|
-| Nome | `puxa-capivara-dados` (se usar outro, troque `BUCKET` nos dois workflows de deploy) |
-| Tipo de local | Região: `southamerica-east1 (São Paulo)` |
-| Classe | Standard |
-| Acesso | Marque **Aplicar a prevenção do acesso público**; controle de acesso **Uniforme** |
+| Name | `puxa-capivara-dados` (if you use another one, change `BUCKET` in both deploy workflows) |
+| Location type | Region: `southamerica-east1 (São Paulo)` |
+| Storage class | Standard |
+| Access | Check **Enforce public access prevention**; **Uniform** access control |
 
-O resto fica no padrão.
+Leave the rest at the defaults.
 
-## 4. Duas contas de serviço
+## 4. Two service accounts
 
-Console > **IAM e administrador** > **Contas de serviço** > **Criar conta de serviço**. Crie as duas. No passo
-"Conceder acesso a esta conta de serviço ao projeto", adicione os papéis da tabela.
+Console > **IAM & Admin** > **Service accounts** > **Create service account**. Create both. In the step "Grant
+this service account access to project", add the roles in the table.
 
-**`puxa-site`**: quem o site usa para ler o bucket.
+**`puxa-site`**: what the site uses to read the bucket.
 
-| Papel | ID |
+| Role (English / Portuguese console) | ID |
 |---|---|
 | Storage Object Viewer / Leitor de objetos do Storage | `roles/storage.objectViewer` |
 
-**`github-deploy`**: quem o GitHub Actions usa para publicar.
+**`github-deploy`**: what GitHub Actions uses to publish.
 
-| Papel | ID |
+| Role (English / Portuguese console) | ID |
 |---|---|
 | Cloud Run Developer / Desenvolvedor do Cloud Run | `roles/run.developer` |
 | Artifact Registry Writer / Gravador do Artifact Registry | `roles/artifactregistry.writer` |
@@ -96,19 +97,19 @@ Console > **IAM e administrador** > **Contas de serviço** > **Criar conta de se
 | Firebase Hosting Admin / Administrador do Firebase Hosting | `roles/firebasehosting.admin` |
 | Service Usage Consumer / Consumidor do Service Usage | `roles/serviceusage.serviceUsageConsumer` |
 
-Os papéis valem para o projeto inteiro. Como o projeto só serve ao puxa-capivara, isso é aceitável e bem mais
-simples de configurar pelo console.
+The roles apply to the whole project. Since the project only serves puxa-capivara, that is acceptable and much
+simpler to set up through the console.
 
-## 5. Deixar o GitHub entrar sem chave (Workload Identity Federation)
+## 5. Let GitHub in without a key (Workload Identity Federation)
 
-Console > **IAM e administrador** > **Federação de identidade da carga de trabalho** > **Criar pool**:
+Console > **IAM & Admin** > **Workload Identity Federation** > **Create pool**:
 
-1. **Pool**: nome `GitHub`, ID `github`. Continuar.
-2. **Provedor**: tipo **OpenID Connect (OIDC)**.
-   - Nome `GitHub Actions`, ID `github-actions`
-   - Emissor (URL): `https://token.actions.githubusercontent.com`
-   - Públicos: **Público padrão**
-3. **Atributos do provedor**:
+1. **Pool**: name `GitHub`, ID `github`. Continue.
+2. **Provider**: type **OpenID Connect (OIDC)**.
+   - Name `GitHub Actions`, ID `github-actions`
+   - Issuer (URL): `https://token.actions.githubusercontent.com`
+   - Audiences: **Default audience**
+3. **Provider attributes**:
 
    | Google | OIDC |
    |---|---|
@@ -116,146 +117,148 @@ Console > **IAM e administrador** > **Federação de identidade da carga de trab
    | `attribute.repository` | `assertion.repository` |
    | `attribute.repository_owner` | `assertion.repository_owner` |
 
-   Em **Condições de atributo**, adicione:
+   Under **Attribute conditions**, add:
 
    ```
    assertion.repository == 'BrunodePauloAlmeida/puxa-capivara'
    ```
 
-   Salvar.
-4. De volta à página do pool, clique em **Conceder acesso** e escolha **Conceder acesso usando a representação da
-   conta de serviço**:
-   - Conta de serviço: `github-deploy`
-   - Principais: atributo `repository`, valor `BrunodePauloAlmeida/puxa-capivara`
-   - Salvar. Na janela "Configurar seu aplicativo", só feche (não precisa baixar nada).
+   Save.
+4. Back on the pool page, click **Grant access** and choose **Grant access using service account
+   impersonation**:
+   - Service account: `github-deploy`
+   - Principals: attribute `repository`, value `BrunodePauloAlmeida/puxa-capivara`
+   - Save. In the "Configure your application" window, just close it (nothing to download).
 
-O nome completo do provedor, que vai para o GitHub no passo 8, é:
+The full provider name, which goes into Bitwarden in step 8, is:
 
 ```
-projects/NUMERO_DO_PROJETO/locations/global/workloadIdentityPools/github/providers/github-actions
+projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github/providers/github-actions
 ```
 
-## 6. Serviço do Cloud Run (primeira vez, com imagem de exemplo)
+## 6. Cloud Run service (first time, with a sample image)
 
-O GitHub Actions troca a imagem depois. Este passo existe para deixar o serviço criado, público e com a conta
-de serviço certa.
+GitHub Actions replaces the image later. This step exists to get the service created, public and with the right
+service account.
 
-Console > **Cloud Run** > **Implantar contêiner** > **Serviço**:
+Console > **Cloud Run** > **Deploy container** > **Service**:
 
-| Campo | Valor |
+| Field | Value |
 |---|---|
-| Imagem | `us-docker.pkg.dev/cloudrun/container/hello` |
-| Nome do serviço | `puxa-capivara-site` |
-| Região | `southamerica-east1 (São Paulo)` |
-| Autenticação | **Permitir acesso público** (veja a nota abaixo) |
-| Faturamento | Baseado em solicitações |
-| Escalonamento | mínimo 0, máximo 3 instâncias |
-| Entrada | Todas |
-| Segurança (em "Contêineres, volumes, rede, segurança") | Conta de serviço: `puxa-site` |
+| Container image URL | `us-docker.pkg.dev/cloudrun/container/hello` |
+| Service name | `puxa-capivara-site` |
+| Region | `southamerica-east1 (São Paulo)` |
+| Authentication | **Allow public access** (see the note below) |
+| Billing | Request-based |
+| Scaling | minimum 0, maximum 3 instances |
+| Ingress | All |
+| Security (under "Containers, Volumes, Networking, Security") | Service account: `puxa-site` |
 
-Criar. Se a URL `...run.app` mostrar a página "It's running!", deu certo.
+Create. If the `...run.app` URL shows the "It's running!" page, it worked.
 
-**Nota sobre a organização Bloomcore:** a política da organização (`iam.allowedPolicyMemberDomains`) só aceita
-contas do domínio, então o acesso público pela forma clássica (`allUsers` como invocador) é recusado. Há duas
-saídas:
+**Note about the Bloomcore organization:** the organization policy (`iam.allowedPolicyMemberDomains`) only accepts
+accounts from the domain, so public access the classic way (`allUsers` as invoker) is refused. There are two ways
+out:
 
-- **Desativar a verificação de IAM do invocador só neste serviço** (recomendado, não mexe na política da
-  organização). No console: Cloud Run > `puxa-capivara-site` > aba **Segurança** > Autenticação > **Permitir acesso
-  público**, que nos consoles recentes faz exatamente isso. No Cloud Shell:
+- **Disable the invoker IAM check on this service only** (recommended, does not touch the organization policy).
+  In the console: Cloud Run > `puxa-capivara-site` > **Security** tab > Authentication > **Allow public access**,
+  which in recent consoles does exactly that. In Cloud Shell:
 
   ```bash
   gcloud run services update puxa-capivara-site --region southamerica-east1 --no-invoker-iam-check
   ```
 
-- Abrir uma exceção à política no projeto, como foi feito no Observa Custódia. Libera `allUsers` para qualquer
-  recurso do projeto, então é mais amplo.
+- Add a policy exception on the project, as was done for Observa Custódia. It allows `allUsers` on any resource in
+  the project, so it is broader.
 
 ## 7. Firebase Hosting
 
-1. Abra <https://console.firebase.google.com> > **Criar um projeto** e escolha **Adicionar o Firebase a um projeto do
-   Google Cloud** (ou "Add Firebase to a Google Cloud project"). Selecione `SEU_PROJETO`.
-2. Google Analytics: pode desativar, não é usado.
-3. O plano fica Blaze automaticamente, porque o projeto já tem faturamento.
-4. No menu do Firebase, abra **Hosting** > **Vamos começar** e avance pelas telas (não precisa rodar os comandos
-   que ele mostra). Isso cria o site `SEU_PROJETO.web.app`.
+1. Open <https://console.firebase.google.com> > **Create a project** and choose **Add Firebase to a Google Cloud
+   project**. Select `YOUR_PROJECT`.
+2. Google Analytics: you can turn it off, it is not used.
+3. The plan becomes Blaze automatically, because the project already has billing.
+4. In the Firebase menu, open **Hosting** > **Get started** and click through the screens (no need to run the
+   commands it shows). This creates the `YOUR_PROJECT.web.app` site.
 
-## 8. Segredos: Bitwarden Secrets Manager, e só o token no GitHub
+## 8. Secrets: Bitwarden Secrets Manager, and only the token on GitHub
 
-Os segredos ficam no **Bitwarden Secrets Manager**, que é o cofre oficial do projeto. O GitHub guarda uma coisa só: o
-token de acesso ao Bitwarden. A cada execução, os workflows leem os segredos pelo nome
-(`.github/actions/segredos-bitwarden`), com a CLI oficial `bws` e checksum conferido, e os mascaram nos logs.
+Secrets live in **Bitwarden Secrets Manager**, the project's official vault. GitHub stores just one thing: the
+Bitwarden access token. On every run, the workflows read the secrets by name
+(`.github/actions/bitwarden-secrets`), with the official `bws` CLI and a verified checksum, and mask them in the
+logs.
 
-No Bitwarden, projeto **puxa-capivara**, com uma **conta de máquina** que tenha leitura nele:
+In Bitwarden, project **puxa-capivara**, with a **machine account** that has read access to it:
 
-| Chave (nome exato) | Valor |
+| Key (exact name) | Value |
 |---|---|
-| `GCP_WORKLOAD_IDENTITY_PROVIDER` | `projects/NUMERO_DO_PROJETO/locations/global/workloadIdentityPools/github/providers/github-actions` |
-| `GCP_SA_EMAIL` | `github-deploy@SEU_PROJETO.iam.gserviceaccount.com` |
+| `GCP_WORKLOAD_IDENTITY_PROVIDER` | `projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github/providers/github-actions` |
+| `GCP_SA_EMAIL` | `github-deploy@YOUR_PROJECT.iam.gserviceaccount.com` |
 
-No GitHub, em **Settings** > **Secrets and variables** > **Actions** > **New repository secret**:
+On GitHub, under **Settings** > **Secrets and variables** > **Actions** > **New repository secret**:
 
-| Nome | Valor |
+| Name | Value |
 |---|---|
-| `BITWARDEN_ACCESS_TOKEN` | token da conta de máquina do Bitwarden |
+| `BITWARDEN_ACCESS_TOKEN` | the Bitwarden machine account token |
 
-Se a organização no Bitwarden estiver na nuvem europeia, crie também a **variável** `BWS_SERVER_URL` com o valor
+If the Bitwarden organization is on the EU cloud, also create the **variable** `BWS_SERVER_URL` with the value
 `https://vault.bitwarden.eu`.
 
-O ID do projeto (`puxa-capivara-513419`) e o nome do bucket (`puxa-capivara-dados`) não são segredo e ficam
-escritos nos próprios workflows.
+The project ID (`puxa-capivara-513419`) and the bucket name (`puxa-capivara-dados`) are not secret and are written
+into the workflows themselves.
 
-## 9. Publicar
+## 9. Publish
 
-1. Faça o merge do PR do site na `main`. O workflow **Deploy do site** roda sozinho: imagem, Cloud Run e Firebase.
-2. Em **Actions** > **Publicar dados do site** > **Run workflow**, deixe `dados-site` e rode. Isso copia os
-   dados para o bucket.
-3. Abra `https://SEU_PROJETO.web.app`.
+1. Merge the site PR into `main`. The **Deploy site** workflow runs on its own: image, Cloud Run and Firebase.
+2. Under **Actions** > **Publish site data** > **Run workflow**, leave `site-data` and run it. This copies the data
+   to the bucket.
+3. Open `https://YOUR_PROJECT.web.app`.
 
-Se o deploy rodou antes do passo 8, rode de novo à mão: **Actions** > **Deploy do site** > **Run workflow**.
+If the deploy ran before step 8, run it again by hand: **Actions** > **Deploy site** > **Run workflow**.
 
-No projeto `puxa-capivara-513419`, a primeira publicação (dados, imagem, Cloud Run e Firebase) foi feita pelo
-terminal em 01/11/2026. A partir do merge, o GitHub Actions assume.
+On the `puxa-capivara-513419` project, the first publication (data, image, Cloud Run and Firebase) was done from
+the terminal on November 1, 2026. From the merge on, GitHub Actions takes over.
 
-## 10. Depois (opcional)
+## 10. Later (optional)
 
-- **Alerta de gasto**: Console > **Faturamento** > **Orçamentos e alertas** > criar um orçamento mensal (por
-  exemplo, R$ 50) com alertas em 50%, 90% e 100%.
-- **Domínio próprio**: Firebase > Hosting > **Adicionar domínio personalizado** e criar no seu DNS os registros que
-  ele pedir. O certificado HTTPS sai sozinho.
-- **Buscadores**: a v1 está marcada para não ser indexada (`robots: noindex` em `site/src/app/layout.tsx`),
-  porque os dados ainda estão em validação. Para liberar, é só remover essa linha.
+- **Spending alert**: Console > **Billing** > **Budgets & alerts** > create a monthly budget (for example,
+  R$ 50) with alerts at 50%, 90% and 100%.
+- **Custom domain**: Firebase > Hosting > **Add custom domain** and create the records it asks for in your DNS.
+  The HTTPS certificate is issued automatically.
+- **Search engines**: v1 is marked as not indexable (`robots: noindex` in `site/src/app/layout.tsx`), because the
+  data is still being validated. To allow indexing, just remove that line.
 
-## Custo esperado
+## Expected cost
 
-Com pouco tráfego, fica dentro das faixas gratuitas ou perto delas: Cloud Run com mínimo de 0 instâncias só cobra
-quando há acesso; o bucket tem uns 170 MB; o Artifact Registry guarda poucas imagens de uns 400 MB. A maior
-variável é a transferência do Firebase Hosting se o site viralizar (cada PDF tem em média 180 KB). Por isso o
-alerta de gasto.
+With little traffic, it stays within the free tiers or close to them: Cloud Run with a minimum of 0 instances only
+charges when there is traffic; the bucket holds about 170 MB; Artifact Registry keeps a few images of about
+400 MB. The biggest variable is Firebase Hosting transfer if the site goes viral (each PDF is 180 KB on average).
+Hence the spending alert.
 
-## Se der erro
+## Troubleshooting
 
-| Sintoma | Causa provável |
+| Symptom | Likely cause |
 |---|---|
-| `falta o secret BITWARDEN_ACCESS_TOKEN` | Secret não cadastrado no repositório (passo 8) |
-| `Chaves ausentes ou repetidas no Bitwarden` | Nome da chave diferente do esperado, chave em outro projeto, ou conta de máquina sem acesso ao projeto |
-| `bws` falha com erro de autenticação | Token vencido ou revogado, ou organização na nuvem europeia sem a variável `BWS_SERVER_URL` |
-| `Permission 'iam.serviceAccounts.getAccessToken' denied` no passo de autenticação | Passo 5.4 (conceder acesso) faltando, ou condição com o nome do repositório errado |
-| `denied: Permission "artifactregistry.repositories.uploadArtifacts"` | Repositório não se chama `puxa-capivara`, está em outra região, ou falta o papel de gravador |
-| `Permission 'iam.serviceaccounts.actAs' denied` no Cloud Run | Falta Service Account User para `github-deploy` |
-| Firebase: `HTTP Error: 403` | Firebase não foi adicionado ao projeto, Hosting não foi iniciado (passo 7.4), ou faltam os papéis do Firebase Hosting / Service Usage |
-| Site abre, mas mostra "Algo deu errado" | Dados ainda não publicados (passo 9.2), ou `puxa-site` sem Leitor de objetos do Storage |
-| Navegador mostra `Forbidden` | Serviço do Cloud Run sem acesso público (passo 6 e a nota sobre a organização) |
-| Deploy pelo GitHub reclama de `run.services.setIamPolicy` | A verificação de IAM do invocador foi desativada por outra conta; rode o deploy uma vez como dono ou dê `roles/run.admin` à `github-deploy` |
+| `missing the BITWARDEN_ACCESS_TOKEN secret` | Secret not set in the repository (step 8) |
+| `Keys missing or duplicated in Bitwarden` | Key name differs from the expected one, key in another project, or the machine account has no access to the project |
+| `bws` fails with an authentication error | Token expired or revoked, or an organization on the EU cloud without the `BWS_SERVER_URL` variable |
+| `Permission 'iam.serviceAccounts.getAccessToken' denied` in the auth step | Step 5.4 (grant access) missing, or a condition with the wrong repository name |
+| `denied: Permission "artifactregistry.repositories.uploadArtifacts"` | The repository is not named `puxa-capivara`, is in another region, or the writer role is missing |
+| `Permission 'iam.serviceaccounts.actAs' denied` in Cloud Run | Service Account User missing for `github-deploy` |
+| Firebase: `HTTP Error: 403` | Firebase was not added to the project, Hosting was not started (step 7.4), or the Firebase Hosting / Service Usage roles are missing |
+| The site opens but shows "Algo deu errado" ("Something went wrong") | Data not published yet (step 9.2), or `puxa-site` lacks Storage Object Viewer |
+| The browser shows `Forbidden` | Cloud Run service without public access (step 6 and the note about the organization) |
+| The deploy from GitHub complains about `run.services.setIamPolicy` | The invoker IAM check was disabled by another account; run the deploy once as the owner or give `roles/run.admin` to `github-deploy` |
 
-## Atualizar os dados
+## Updating the data
 
-Hoje: rodar o pipeline (`uv run puxa ...` e depois `uv run puxa site`), empacotar `dados/site/web` em
-`site-web.tar.gz`, substituir o arquivo no branch `dados-site` (Git LFS) e rodar **Publicar dados do site**.
+Today: run the pipeline (`uv run puxa ...` and then `uv run puxa site`), pack `data/site/web` into
+`site-web.tar.gz`, replace the file on the `site-data` branch (Git LFS) and run **Publish site data**.
 
 ```bash
-tar -czf site-web.tar.gz -C dados/site/web .
+tar -czf site-web.tar.gz -C data/site/web .
 ```
 
-Cada execução baixa uns 100 MB do Git LFS, o que conta na cota mensal de transferência LFS da conta do GitHub.
+Each run downloads about 100 MB from Git LFS, which counts toward the GitHub account's monthly LFS bandwidth
+quota.
 
-Na Sprint 3 do roadmap, o pipeline passa a rodar no Cloud Run Job e grava direto no bucket.
+In Sprint 3 of the roadmap, the pipeline moves to a Cloud Run Job and writes straight to the bucket.

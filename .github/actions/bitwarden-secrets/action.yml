@@ -1,0 +1,24 @@
+name: Bitwarden secrets
+description: >-
+  Reads keys from Bitwarden Secrets Manager by name and exports them as environment variables for the following
+  steps, masked in the logs. Fails if any requested key is missing or duplicated.
+inputs:
+  access_token:
+    description: Bitwarden machine account token (the repository's BITWARDEN_ACCESS_TOKEN secret)
+    required: true
+  keys:
+    description: Names of the keys in Bitwarden, separated by spaces or newlines
+    required: true
+  server_url:
+    description: Bitwarden server; empty uses bitwarden.com (for the EU cloud, https://vault.bitwarden.eu)
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        BWS_ACCESS_TOKEN: ${{ inputs.access_token }}
+        KEYS: ${{ inputs.keys }}
+        BWS_SERVER_URL: ${{ inputs.server_url }}
+      run: bash "$GITHUB_ACTION_PATH/read.sh"

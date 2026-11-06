@@ -1,5 +1,5 @@
-"""Cliente HTTP educado: identifica o projeto, espaça as requisições, repete em falhas temporárias
-e registra serviços que o provedor marcou como depreciados (headers Deprecation/Sunset do Senado)."""
+"""Polite HTTP client: identifies the project, spaces out requests, retries on transient failures
+and records services the provider marked as deprecated (Senate Deprecation/Sunset headers)."""
 
 import json
 import logging
@@ -14,95 +14,95 @@ from puxa.config import USER_AGENT
 
 log = logging.getLogger(__name__)
 
-STATUS_TEMPORARIOS = {429, 500, 502, 503, 504}
+TRANSIENT_STATUS = {429, 500, 502, 503, 504}
 
 
-def _falha_temporaria(exc: BaseException) -> bool:
+def _is_transient(exc: BaseException) -> bool:
     if isinstance(exc, httpx.TransportError):
         return True
-    return isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code in STATUS_TEMPORARIOS
+    return isinstance(exc, httpx.HTTPStatusError) and exc.response.status_code in TRANSIENT_STATUS
 
 
-_repetir = retry(
-    retry=retry_if_exception(_falha_temporaria),
+_retry = retry(
+    retry=retry_if_exception(_is_transient),
     stop=stop_after_attempt(5),
     wait=wait_exponential(multiplier=1, min=2, max=30),
     reraise=True,
 )
 
 
-class Cliente:
-    def __init__(self, intervalo: float = 0.2, transport: httpx.BaseTransport | None = None):
-        self.intervalo = intervalo
-        self._ultimo = 0.0
+class Client:
+    def __init__(self, interval: float = 0.2, transport: httpx.BaseTransport | None = None):
+        self.interval = interval
+        self._last = 0.0
         self._http = httpx.Client(
             headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
             timeout=httpx.Timeout(60.0, connect=20.0),
             follow_redirects=True,
             transport=transport,
         )
-        # rota -> {"deprecation": ..., "sunset": ..., "sucessor": ...}
-        self.depreciados: dict[str, dict[str, str | None]] = {}
+        # route -> {"deprecation": ..., "sunset": ..., "successor": ...}
+        self.deprecated: dict[str, dict[str, str | None]] = {}
 
-    def __enter__(self) -> "Cliente":
+    def __enter__(self) -> "Client":
         return self
 
     def __exit__(self, *_: object) -> None:
         self._http.close()
 
-    def _esperar(self) -> None:
-        falta = self.intervalo - (time.monotonic() - self._ultimo)
-        if falta > 0:
-            time.sleep(falta)
-        self._ultimo = time.monotonic()
+    def _wait(self) -> None:
+        remaining = self.interval - (time.monotonic() - self._last)
+        if remaining > 0:
+            time.sleep(remaining)
+        self._last = time.monotonic()
 
-    def _checar_depreciacao(self, resposta: httpx.Response) -> None:
-        h = resposta.headers
+    def _check_deprecation(self, response: httpx.Response) -> None:
+        h = response.headers
         if "deprecation" not in h and "sunset" not in h:
             return
-        rota = resposta.request.url.copy_with(query=None).path
-        if rota not in self.depreciados:
-            self.depreciados[rota] = {
+        route = response.request.url.copy_with(query=None).path
+        if route not in self.deprecated:
+            self.deprecated[route] = {
                 "deprecation": h.get("deprecation"),
                 "sunset": h.get("sunset"),
-                "sucessor": h.get("link"),
+                "successor": h.get("link"),
             }
             log.warning(
-                "Serviço depreciado: %s (sunset %s, sucessor %s)", rota, h.get("sunset"), h.get("link")
+                "Deprecated service: %s (sunset %s, successor %s)", route, h.get("sunset"), h.get("link")
             )
 
-    @_repetir
+    @_retry
     def get_json(self, url: str, params: dict[str, Any] | None = None) -> Any:
-        self._esperar()
-        resposta = self._http.get(url, params=params)
-        self._checar_depreciacao(resposta)
-        resposta.raise_for_status()
-        return resposta.json()
+        self._wait()
+        response = self._http.get(url, params=params)
+        self._check_deprecation(response)
+        response.raise_for_status()
+        return response.json()
 
-    @_repetir
-    def baixar(self, url: str, destino: Path) -> Path:
-        """Baixa um arquivo grande. Pula o download se o arquivo local tem o mesmo tamanho e data do servidor."""
-        destino.parent.mkdir(parents=True, exist_ok=True)
-        meta_path = destino.with_name(destino.name + ".meta.json")
-        self._esperar()
-        aceita_tudo = {"Accept": "*/*"}  # servidores de imagem recusam Accept: application/json (406)
-        cabecalho = self._http.head(url, headers=aceita_tudo)
-        cabecalho.raise_for_status()
+    @_retry
+    def download(self, url: str, dest: Path) -> Path:
+        """Downloads a large file. Skips the download if the local file has the same size and date as the server's."""
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        meta_path = dest.with_name(dest.name + ".meta.json")
+        self._wait()
+        accept_all = {"Accept": "*/*"}  # image servers reject Accept: application/json (406)
+        head = self._http.head(url, headers=accept_all)
+        head.raise_for_status()
         meta = {
             "url": url,
-            "last_modified": cabecalho.headers.get("last-modified"),
-            "content_length": cabecalho.headers.get("content-length"),
+            "last_modified": head.headers.get("last-modified"),
+            "content_length": head.headers.get("content-length"),
         }
-        if destino.exists() and meta_path.exists() and json.loads(meta_path.read_text()) == meta:
-            log.info("Sem mudança, usando cópia local: %s", destino.name)
-            return destino
-        log.info("Baixando %s", url)
-        temporario = destino.with_name(destino.name + ".parcial")
-        with self._http.stream("GET", url, headers=aceita_tudo) as resposta:
-            resposta.raise_for_status()
-            with temporario.open("wb") as f:
-                for bloco in resposta.iter_bytes(1 << 20):
-                    f.write(bloco)
-        temporario.replace(destino)
+        if dest.exists() and meta_path.exists() and json.loads(meta_path.read_text()) == meta:
+            log.info("Unchanged, using local copy: %s", dest.name)
+            return dest
+        log.info("Downloading %s", url)
+        partial = dest.with_name(dest.name + ".partial")
+        with self._http.stream("GET", url, headers=accept_all) as response:
+            response.raise_for_status()
+            with partial.open("wb") as f:
+                for chunk in response.iter_bytes(1 << 20):
+                    f.write(chunk)
+        partial.replace(dest)
         meta_path.write_text(json.dumps(meta))
-        return destino
+        return dest

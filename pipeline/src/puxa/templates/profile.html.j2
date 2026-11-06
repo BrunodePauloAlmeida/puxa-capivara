@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>{{ name }} · puxa-capivara</title>
+<style>
+  @page { size: A4; margin: 0; }
+  :root {
+    --ink: #1b1f24;
+    --muted: #5b6470;
+    --rule: #dde1e6;
+    --bg: #f3f4f6;
+    --yes: #1f4e8c;
+    --no: #a8502b;
+    --partial: #e8dcbc;
+    --brand: #7a5230;
+  }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: Inter, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    font-size: 9pt;
+    line-height: 1.35;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .page {
+    width: 210mm; height: 297mm; box-sizing: border-box;
+    padding: 11mm 13mm 9mm;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .topbar {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 2px solid var(--ink); padding-bottom: 1.8mm;
+    font-size: 7.5pt; color: var(--muted);
+  }
+  .brand { font-size: 11pt; font-weight: 800; color: var(--brand); letter-spacing: -0.01em; }
+  .brand span { color: var(--muted); font-weight: 500; font-size: 7.5pt; margin-left: 2mm; letter-spacing: 0; }
+
+  .identity { display: flex; gap: 6mm; margin-top: 5mm; align-items: flex-start; }
+  .photo { width: 30mm; height: 40mm; object-fit: cover; object-position: top; border-radius: 2mm; flex: none; background: var(--bg); }
+  .photo.empty { display: flex; align-items: center; justify-content: center; font-size: 22pt; font-weight: 700; color: var(--muted); }
+  h1 { font-size: 25pt; line-height: 1.05; margin: 1mm 0 1.2mm; font-weight: 800; letter-spacing: -0.015em; }
+  .civil-name { color: var(--muted); font-size: 8.2pt; margin-bottom: 2.5mm; }
+  .roles { margin: 0; padding: 0; list-style: none; }
+  .roles li { font-size: 9.6pt; margin-bottom: 0.8mm; }
+  .roles li:first-child { font-weight: 600; font-size: 10.4pt; }
+
+  section { margin-top: 5mm; }
+  h2 {
+    font-size: 7.6pt; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted);
+    margin: 0 0 1.8mm; padding-bottom: 1mm; border-bottom: 1px solid var(--rule); font-weight: 700;
+  }
+  .sub { color: var(--muted); font-size: 7.6pt; }
+
+  .hot-topics { background: var(--bg); border-radius: 2.5mm; padding: 2.8mm 4mm; }
+  .hot-topics .item { display: flex; justify-content: space-between; align-items: center; gap: 5mm; padding: 1.2mm 0; }
+  .hot-topics .item + .item { border-top: 1px solid var(--rule); }
+  .hot-topics .title { font-weight: 700; font-size: 10.6pt; }
+
+  table.votes { width: 100%; border-collapse: collapse; }
+  table.votes td { padding: 1.5mm 0; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+  table.votes .title { font-weight: 600; font-size: 9.2pt; }
+  td.vote { text-align: right; white-space: nowrap; width: 38mm; padding-left: 3mm; }
+  td.vote .detail { display: block; white-space: normal; font-size: 6.8pt; color: var(--muted); margin-top: 0.5mm; }
+
+  .chip { display: inline-block; padding: 0.5mm 2.6mm; border-radius: 10mm; font-weight: 700; font-size: 8.2pt; }
+  .chip.yes { background: var(--yes); color: #fff; }
+  .chip.no { background: var(--no); color: #fff; }
+  .chip.partial { background: var(--partial); color: var(--ink); }
+  .chip.neutral { background: #e4e7eb; color: #3a4049; }
+  .chip.empty { border: 1px solid #c3c8cf; color: var(--muted); font-weight: 600; padding: 0.3mm 2.4mm; }
+  .chip.large { font-size: 10pt; padding: 0.8mm 3.4mm; }
+
+  .numbers { display: flex; gap: 3mm; }
+  .number { flex: 1; background: var(--bg); border-radius: 2.5mm; padding: 2.4mm 3.2mm; font-size: 7.8pt; color: var(--muted); }
+  .number b { display: block; font-size: 17pt; line-height: 1.1; color: var(--ink); }
+  .highlights { margin: 2.4mm 0 0; padding: 0; list-style: none; }
+  .highlights li { margin-bottom: 1.4mm; font-size: 8.4pt; }
+  .highlights .law { font-weight: 600; }
+
+  .note { font-size: 7.4pt; color: var(--muted); margin-top: 1.4mm; }
+
+  footer { margin-top: auto; border-top: 1px solid var(--rule); padding-top: 2mm; font-size: 6.8pt; color: var(--muted); line-height: 1.4; }
+  footer p { margin: 0 0 0.8mm; }
+
+  body.compact { font-size: 8.3pt; }
+  body.compact section { margin-top: 3.4mm; }
+  body.compact table.votes td { padding: 1mm 0; }
+  body.compact h1 { font-size: 21pt; }
+  body.compact .photo { width: 26mm; height: 34.5mm; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="brand">puxa-capivara <span>Ficha pública · rascunho {{ version }}</span></div>
+    <div>Gerada em {{ generated_at }}</div>
+  </div>
+
+  <div class="identity">
+    {% if photo %}
+      <img class="photo" src="{{ photo }}" alt="Foto de {{ name }}">
+    {% else %}
+      <div class="photo empty" aria-label="Sem foto">{{ initials }}</div>
+    {% endif %}
+    <div>
+      <h1>{{ name }}</h1>
+      {% if civil_name and civil_name|lower != name|lower %}<div class="civil-name">Nome civil: {{ civil_name }}</div>{% endif %}
+      <ul class="roles">
+        {% for line in roles %}<li>{{ line }}</li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <section>
+    <h2>Temas do momento</h2>
+    <div class="hot-topics">
+      {% for v in hot_topics %}
+      <div class="item">
+        <div>
+          <div class="title">{{ v.title }}</div>
+          <div class="sub">{{ v.house }}{% if v.date %}, {{ v.date }}{% endif %} · Sim = {{ v.yes_means }}{% if v.outcome %} · Resultado: {{ v.outcome }}{% endif %}</div>
+        </div>
+        <div style="text-align:right">
+          <span class="chip large {{ v.class }}">{{ v.vote }}</span>
+          {% if v.detail %}<div class="sub">{{ v.detail }}</div>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+      {% if not in_congress %}
+      <div class="item">
+        <div>
+          <div class="title">Fim da escala 6x1</div>
+          <div class="sub">Sem mandato atual no Congresso. Votos de mandatos anteriores entram nas próximas versões.</div>
+        </div>
+        <div><span class="chip empty">Não se aplica</span></div>
+      </div>
+      {% endif %}
+      <div class="item">
+        <div>
+          <div class="title">Proibição das bets</div>
+          <div class="sub">Ainda sem votação nominal no Congresso. Declarações sobre o tema entram na próxima versão.</div>
+        </div>
+        <div><span class="chip empty">Em levantamento</span></div>
+      </div>
+    </div>
+  </section>
+
+  {% if votes %}
+  <section>
+    <h2>Votações-chave da legislatura 2023–2027</h2>
+    <table class="votes">
+      {% for v in votes %}
+      <tr>
+        <td>
+          <div class="title">{{ v.title }}</div>
+          <div class="sub">Sim = {{ v.yes_means }} · {{ v.house }}{% if v.date %}, {{ v.date }}{% endif %}{% if v.outcome %} · Resultado: {{ v.outcome }}{% endif %}</div>
+        </td>
+        <td class="vote">
+          <span class="chip {{ v.class }}">{{ v.vote }}</span>
+          {% if v.detail %}<span class="detail">{{ v.detail }}</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    <div class="note">"Sem registro": ausente ou sem mandato na data da votação. Votos de plenário; quando houve dois turnos, vale o 1º.</div>
+  </section>
+  {% endif %}
+
+  {% if bills %}
+  <section>
+    <h2>Produção legislativa ({{ bills.house }}, desde {{ bills.since }})</h2>
+    <div class="numbers">
+      <div class="number"><b>{{ bills.first_author }}</b>projetos como primeiro autor</div>
+      <div class="number"><b>{{ bills.total }}</b>projetos contando coautorias</div>
+      <div class="number"><b>{{ bills.became_law }}</b>viraram lei ou norma, como primeiro autor</div>
+    </div>
+    {% if bills.highlights %}
+    <ul class="highlights">
+      {% for d in bills.highlights %}
+      <li><span class="law">{{ d.identifier }}{% if d.law %} → {{ d.law }}{% endif %}</span>: {{ d.summary }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <div class="note">Conta projetos de lei, de lei complementar, de decreto legislativo, de resolução e PECs. Assinaturas de apoio a PEC não contam como autoria.</div>
+  </section>
+  {% elif not in_congress %}
+  <section>
+    <h2>Atuação</h2>
+    <div class="note" style="font-size:8.6pt">Sem mandato atual no Congresso. Mandatos anteriores, patrimônio declarado, financiamento de campanha e atos de governo entram nas próximas versões.</div>
+  </section>
+  {% endif %}
+
+  <footer>
+    <p><b>Fontes:</b> Câmara dos Deputados, Senado Federal e Tribunal Superior Eleitoral (dados abertos).{% if photo_source %} Foto: {{ photo_source }}.{% endif %}</p>
+    <p><b>Rascunho {{ version }}:</b> os dados estão em validação e podem conter erros. Próximas versões: patrimônio declarado, financiamento de campanha, processos e investigações, e declarações sobre os temas do momento.</p>
+  </footer>
+
+</div>
+</body>
+</html>

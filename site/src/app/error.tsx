@@ -1,12 +1,12 @@
 "use client";
 
-export default function Erro({ reset }: { error: Error; reset: () => void }) {
+export default function ErrorPage({ reset }: { error: Error; reset: () => void }) {
   return (
-    <section className="vazio-pagina">
+    <section className="empty-page">
       <h1>Algo deu errado</h1>
-      <p className="nota">Não conseguimos carregar os dados agora. Tente de novo em instantes.</p>
+      <p className="note">Não conseguimos carregar os dados agora. Tente de novo em instantes.</p>
       <p>
-        <button type="button" className="botao" onClick={reset}>
+        <button type="button" className="button" onClick={reset}>
           Tentar de novo
         </button>
       </p>

@@ -1,0 +1,13 @@
+# Who governs each state today, when the automatic inference gets it wrong.
+#
+# The pipeline starts from the governors elected in 2022 and presumes that whoever ran for another office in 2026
+# resigned by April (desincompatibilização), handing the office to the vice. That does not cover death, removal
+# from office, judicial suspension, or the case where the vice also left. In those cases, record it here, with
+# the source.
+#
+# Example:
+#   - state: XX
+#     civil_name: FULL NAME AS IT APPEARS IN THE TSE DATA
+#     party: ACRONYM
+#     reason: "Vice assumiu em 05/04/2026 após renúncia do titular (Diário Oficial do Estado, 05/04/2026)"
+overrides: []

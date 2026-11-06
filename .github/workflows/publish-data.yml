@@ -1,0 +1,60 @@
+# Copies the site data bundle (site-web.tar.gz, stored with Git LFS on the site-data branch) to
+# Cloud Storage. The site reads from the puxa-capivara-dados bucket, folder web/.
+# Run by hand: Actions > Publish site data > Run workflow.
+# Later, the pipeline in a Cloud Run Job writes straight to the bucket and this workflow is no longer needed.
+name: Publish site data
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch or commit containing site-web.tar.gz
+        required: true
+        default: site-data
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  PROJECT: puxa-capivara-513419
+  BUCKET: puxa-capivara-dados
+
+jobs:
+  publish:
+    if: github.repository == 'BrunodePauloAlmeida/puxa-capivara'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          lfs: true
+          path: bundle
+
+      - name: Unpack the bundle
+        run: |
+          mkdir web
+          tar -xzf bundle/site-web.tar.gz -C web
+          test -f web/index.json && test -f web/meta.json
+          cat web/meta.json
+
+      - name: Bitwarden secrets
+        uses: ./.github/actions/bitwarden-secrets
+        with:
+          access_token: ${{ secrets.BITWARDEN_ACCESS_TOKEN }}
+          server_url: ${{ vars.BWS_SERVER_URL }}
+          keys: GCP_WORKLOAD_IDENTITY_PROVIDER GCP_SA_EMAIL
+
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SA_EMAIL }}
+
+      - uses: google-github-actions/setup-gcloud@v3
+
+      - name: Sync with the bucket
+        run: |
+          gcloud storage rsync web "gs://$BUCKET/web" \
+            --recursive --delete-unmatched-destination-objects --project "$PROJECT"

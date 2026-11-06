@@ -1,5 +1,5 @@
-# Dados baixados e gerados (vão para o Cloud Storage, não para o Git)
-dados/
+# Downloaded and generated data (goes to Cloud Storage, not to Git)
+data/
 
 # Python
 .venv/
@@ -8,10 +8,10 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 
-# Segredos locais
+# Local secrets
 .env
 .env.*
 !.env.example
 
-# Cache do firebase-tools
+# firebase-tools cache
 .firebase/

@@ -1,43 +1,43 @@
-import { lerMeta, pesquisar } from "@/lib/dados.ts";
+import { readMeta, searchPeople } from "@/lib/data.ts";
 
-import { Busca } from "./busca.tsx";
+import { Search } from "./search.tsx";
 
-export default async function Inicio({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {
+export default async function Home({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {
   const { q } = await searchParams;
-  const consulta = (Array.isArray(q) ? q[0] : q)?.slice(0, 80) ?? "";
-  const [meta, iniciais] = await Promise.all([lerMeta(), consulta ? pesquisar(consulta) : []]);
+  const query = (Array.isArray(q) ? q[0] : q)?.slice(0, 80) ?? "";
+  const [meta, initialResults] = await Promise.all([readMeta(), query ? searchPeople(query) : []]);
 
   return (
     <>
-      <section className="capa">
+      <section className="hero">
         <h1>Quem é quem na política</h1>
         <p>
           Busque pelo nome e veja, em uma página, como a pessoa votou nos projetos mais importantes, o que
           propôs e o que virou lei. Dá para baixar tudo em PDF.
         </p>
-        <Busca consultaInicial={consulta} iniciais={iniciais} />
+        <Search initialQuery={query} initialResults={initialResults} />
       </section>
 
       {meta && (
-        <section className="painel" aria-labelledby="titulo-painel">
-          <h2 id="titulo-painel">Quem está aqui</h2>
-          <div className="numeros">
-            <div className="numero">
-              <b>{meta.em_exercicio.presidente}</b>Presidente da República
+        <section className="panel" aria-labelledby="panel-title">
+          <h2 id="panel-title">Quem está aqui</h2>
+          <div className="stats">
+            <div className="stat">
+              <b>{meta.in_office.president}</b>Presidente da República
             </div>
-            <div className="numero">
-              <b>{meta.em_exercicio.governador}</b>governadores
+            <div className="stat">
+              <b>{meta.in_office.governor}</b>governadores
             </div>
-            <div className="numero">
-              <b>{meta.em_exercicio.senador}</b>senadores
+            <div className="stat">
+              <b>{meta.in_office.senator}</b>senadores
             </div>
-            <div className="numero">
-              <b>{meta.em_exercicio.deputado_federal}</b>deputados federais
+            <div className="stat">
+              <b>{meta.in_office.federal_deputy}</b>deputados federais
             </div>
           </div>
-          <p className="nota">
-            Em exercício hoje, mais quem foi eleito em 2026: {meta.pessoas.toLocaleString("pt-BR")} pessoas no
-            total. Dados de {meta.gerado_em.split("-").reverse().join("/")}.
+          <p className="note">
+            Em exercício hoje, mais quem foi eleito em 2026: {meta.people.toLocaleString("pt-BR")} pessoas no
+            total. Dados de {meta.generated_at.split("-").reverse().join("/")}.
           </p>
         </section>
       )}

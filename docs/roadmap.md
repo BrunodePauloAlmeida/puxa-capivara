@@ -1,104 +1,106 @@
-# Roadmap: tudo construído até 31/12/2026
+# Roadmap: everything built by December 31, 2026
 
-Atualizado em 01/11/2026. Todo o desenvolvimento cabe em oito semanas, de 02/11 a 31/12/2026: quatro sprints de duas
-semanas e uma semana de fechamento. Depois disso, as eleições de 2028 e 2030 são operação do sistema pronto, não novas
-fases de construção.
+Updated on November 1, 2026. All development fits in eight weeks, from November 2 to December 31, 2026: four
+two-week sprints and one wrap-up week. After that, the 2028 and 2030 elections are operation of the finished
+system, not new construction phases.
 
-A versão para patrocinadores, com custos, equipe, governança e riscos, é mantida em documento à parte.
+The version for sponsors, with costs, team, governance and risks, is kept in a separate document.
 
-## Já entregue
+## Already delivered
 
-- [x] Fontes validadas ao vivo (`validacao-fontes.md`)
-- [x] Cadastro mestre com 862 pessoas (`puxa cadastro`)
-- [x] Votações-chave: 8 temas, 19 votações nominais (`puxa votacoes`)
-- [x] Produção legislativa desde 2019 (`puxa producao`)
-- [x] Fotos oficiais e ficha em PDF, rascunho v1 (`puxa fotos`, `puxa ficha`)
+- [x] Sources validated live (`source-validation.md`)
+- [x] Master registry with 862 people (`puxa registry`)
+- [x] Key votes: 8 topics, 19 roll-call votes (`puxa votes`)
+- [x] Legislative output since 2019 (`puxa bills`)
+- [x] Official photos and the PDF profile, draft v1 (`puxa photos`, `puxa profile`)
 
-## Sprint 1: ficha v2 e site no ar (02/11 a 15/11)
+## Sprint 1: profile v2 and the site live (November 2 to 15)
 
-- [ ] Ficha v2: um resumo de verdade, lido em 30 segundos (princípios abaixo), testada com 10 eleitores
-- [ ] Patrimônio, doadores e trajetória do TSE para as 862 pessoas
-- [ ] Presença, alinhamento ao partido e ao governo, cota parlamentar e emendas
-- [ ] Projeto no Google Cloud, site público com busca, página por pessoa, PDF e imagem para celular
-- [ ] Atualização diária automática; conferência dos 27 governadores; revisão dos resumos das votações-chave
-- [ ] Teste do TCU e do GDELT a partir do Google Cloud
+- [ ] Profile v2: a real summary, read in 30 seconds (principles below), tested with 10 voters
+- [ ] Assets, donors and TSE career history for the 862 people
+- [ ] Attendance, alignment with party and government, parliamentary allowance (cota parlamentar) and budget
+      amendments
+- [ ] Google Cloud project, public site with search, a page per person, PDF and a mobile image
+- [ ] Automatic daily update; check of the 27 governors; review of the key-vote summaries
+- [ ] Test TCU and GDELT from Google Cloud
 
-**Pronto quando:** o site estiver no ar com as 862 fichas v2.
+**Done when:** the site is live with the 862 v2 profiles.
 
-### Princípios da ficha v2
-1. No máximo cerca de 120 palavras na página, além dos nomes.
-2. Fato = número + rótulo curto; explicação, data e fonte vão para o site.
-3. Cinco blocos fixos, na mesma ordem para qualquer cargo: quem é; em 30 segundos (quatro indicadores); como votou ou
-   o que entregou; temas do momento; trajetória e dinheiro.
-4. Bloco sem dado não aparece.
-5. Votos em grade de ícones, com uma legenda só.
-6. Rodapé de uma linha com fontes, data e QR code para a página oficial (verificação da ficha).
-7. Dois formatos: A4 e imagem vertical para aplicativos de mensagem.
+### Principles for profile v2
+1. At most about 120 words on the page, besides the names.
+2. Fact = number + short label; explanation, date and source go on the site.
+3. Five fixed blocks, in the same order for any office: who they are; in 30 seconds (four indicators); how they
+   voted or what they delivered; hot topics; career and money.
+4. A block with no data is not shown.
+5. Votes in an icon grid, with a single legend.
+6. One-line footer with sources, date and a QR code to the official page (to verify the profile).
+7. Two formats: A4 and a vertical image for messaging apps.
 
-## Sprint 2: gestão do presidente e dos governadores (16/11 a 29/11)
+## Sprint 2: performance in office of the president and governors (November 16 to 29)
 
-- [ ] Contas: despesa com pessoal, dívida, investimento e resultado, início e fim do mandato (Tesouro, SICONFI), e
-      parecer do tribunal de contas
-- [ ] Resultados: educação, saúde, segurança, emprego e renda, início e fim do mandato, ao lado da média nacional
-      (IBGE, INEP, DATASUS, Banco Central)
-- [ ] Promessas e entregas: plano de governo do TSE resumido por IA com revisão humana
-- [ ] Atos: medidas provisórias, vetos, leis e taxa de aprovação dos projetos do governo (presidente); leis e vetos
-      onde a assembleia publica dados (governadores)
-- [ ] Mandatos anteriores de todos e página pública de metodologia
+- [ ] Public accounts: personnel spending, debt, investment and fiscal result, at the start and end of the term
+      (Tesouro Nacional, SICONFI), and the audit court's opinion
+- [ ] Results: education, health, public safety, jobs and income, at the start and end of the term, next to the
+      national average (IBGE, INEP, DATASUS, Banco Central)
+- [ ] Promises and delivery: the TSE government plan summarized by AI with human review
+- [ ] Acts: provisional measures (medidas provisórias), vetoes, laws and the approval rate of the government's
+      bills (president); laws and vetoes where the assembly publishes data (governors)
+- [ ] Previous terms for everyone and a public methodology page
 
-**Pronto quando:** as 28 fichas executivas tiverem as quatro lentes, revisadas por um editor.
+**Done when:** the 28 executive profiles have all four lenses, reviewed by an editor.
 
-## Sprint 3: todos os eleitos e candidatos pela base do TSE (30/11 a 13/12)
+## Sprint 3: everyone elected and every candidate, from the TSE data (November 30 to December 13)
 
-- [ ] Ficha base (identidade, trajetória, patrimônio, doadores, certidões e plano de governo) para os 5.541 prefeitos e
-      58.174 vereadores eleitos em 2024, os deputados estaduais e todos os candidatos de 2024 e 2026 (cerca de 485 mil
-      candidaturas)
-- [ ] Gestão dos prefeitos: contas (SICONFI), indicadores do município e diários oficiais (Querido Diário)
-- [ ] Escala: coleta em paralelo por UF (Cloud Run Jobs), BigQuery para as bases grandes, busca no servidor, PDF sob
-      demanda com cache
+- [ ] Base profile (identity, career, assets, donors, criminal record certificates and government plan) for the
+      5,541 mayors and 58,174 city councillors elected in 2024, the state deputies, and all 2024 and 2026
+      candidates (about 485,000 candidacies)
+- [ ] Mayors' performance: accounts (SICONFI), municipal indicators and official gazettes (Querido Diário)
+- [ ] Scale: parallel collection per state (Cloud Run Jobs), BigQuery for the large datasets, server-side search,
+      PDF on demand with caching
 
-**Pronto quando:** qualquer eleito ou candidato de 2024 e 2026 tiver ficha.
+**Done when:** every person elected or running in 2024 and 2026 has a profile.
 
-## Sprint 4: processos, declarações e casas legislativas (14/12 a 27/12)
+## Sprint 4: lawsuits, statements and legislative houses (December 14 to 27)
 
-- [ ] Coletores oficiais de processos: certidões criminais do TSE, TCU, CGU (chave no Bitwarden), conselhos de ética
-- [ ] Fila de curadoria para STF e STJ; andamento pelo DataJud
-- [ ] Discursos e notícias por tema, resumo por IA com revisão; temas do momento configuráveis
-- [ ] Votos e projetos das câmaras municipais e assembleias com dados abertos (SAPL e capitais)
-- [ ] Canal de correção e direito de resposta (até 48 h)
+- [ ] Official lawsuit collectors: TSE criminal record certificates, TCU, CGU (key in Bitwarden), ethics councils
+- [ ] Curation queue for STF and STJ; case progress through DataJud
+- [ ] Speeches and news by topic, AI summary with review; configurable hot topics
+- [ ] Votes and bills from city councils and state assemblies with open data (SAPL and state capitals)
+- [ ] Correction and right-of-reply channel (within 48 h)
 
-**Pronto quando:** os blocos de processos e declarações estiverem publicados para quem tem mandato, com parecer jurídico
-favorável.
+**Done when:** the lawsuit and statement blocks are published for everyone in office, with a favorable legal
+opinion.
 
-## Fechamento: teste e lançamento (28/12 a 31/12)
+## Wrap-up: testing and launch (December 28 to 31)
 
-- [ ] Teste de carga com volume de campanha, revisão final e lançamento da cobertura completa
+- [ ] Load test at campaign volume, final review and launch of full coverage
 
-**Pronto quando:** em 31/12/2026 o sistema estiver no ar, atualizado todo dia sem intervenção manual.
+**Done when:** on December 31, 2026 the system is live, updated every day without manual intervention.
 
-## Para caber em 2026
+## To fit in 2026
 
-- O prazo depende de a equipe e o projeto no Google Cloud estarem prontos no início do sprint 1, e de o desenvolvimento
-  seguir o ritmo do protótipo, feito com apoio de IA em dois dias.
-- O que depende de terceiros não trava o lançamento: se o parecer jurídico não sair até 27/12, o bloco de processos
-  entra em janeiro; câmaras e assembleias sem dados abertos entram ao longo de 2027.
-- A curadoria humana (processos de STF e STJ, revisão dos resumos de IA) começa em dezembro e segue permanente.
+- The deadline depends on the team and the Google Cloud project being ready at the start of sprint 1, and on
+  development keeping the pace of the prototype, built with AI assistance in two days.
+- What depends on third parties does not hold up the launch: if the legal opinion is not out by December 27, the
+  lawsuit block comes in January; city councils and assemblies without open data come in over 2027.
+- Human curation (STF and STJ lawsuits, review of AI summaries) starts in December and is ongoing.
 
-## Depois de 2026: operação
+## After 2026: operation
 
-- **2027:** troca de mandato automática nas posses (05/01, 06/01 e 01/02); câmaras e assembleias sem dados abertos.
-- **2028:** registros de candidatura a partir de 15/08 (ingestão a cada hora no período) e ficha em até 48 h; 1º turno
-  em 01/10 e 2º turno em 29/10; posse dos eleitos em 01/01/2029.
-- **2030:** o mesmo ciclo para as eleições gerais, com 1º turno em 06/10.
+- **2027:** automatic change of office holders at the inaugurations (January 5, January 6 and February 1); city
+  councils and assemblies without open data.
+- **2028:** candidate registrations from August 15 (hourly ingestion during that period) and a profile within
+  48 h; first round on October 1 and runoff on October 29; those elected take office on January 1, 2029.
+- **2030:** the same cycle for the general elections, with the first round on October 6.
 
-## Riscos principais
+## Main risks
 
-| Risco | Mitigação |
+| Risk | Mitigation |
 |---|---|
-| Prazo de oito semanas | Escopo fechado por sprint; o que depende de terceiros entra na operação sem travar o lançamento |
-| Ação por calúnia ou difamação | Fonte oficial em cada fato, status jurídico exato, revisão humana, correção em até 48 h |
-| Percepção de viés | Metodologia pública, conselho plural, mesmos blocos para todos, cores neutras |
-| Dados municipais desiguais | Base do TSE igual para todos; cobertura de cada cidade informada na ficha |
-| Mudança ou queda de APIs | Cópia das respostas brutas, aviso de serviço depreciado, arquivos em lote |
-| Pico de acesso na campanha | Teste de carga em dezembro, CDN, PDF sob demanda com cache |
-| Fichas falsas circulando | QR code de verificação em cada PDF |
+| Eight-week deadline | Scope fixed per sprint; what depends on third parties moves to operation without holding up the launch |
+| Lawsuit for libel or defamation | Official source for every fact, exact legal status, human review, correction within 48 h |
+| Perceived bias | Public methodology, a plural advisory board, the same blocks for everyone, neutral colors |
+| Uneven municipal data | The same TSE base for everyone; each city's coverage stated in the profile |
+| API changes or outages | Copies of the raw responses, deprecated-service warnings, bulk files |
+| Traffic spike during the campaign | Load test in December, CDN, PDF on demand with caching |
+| Fake profiles circulating | Verification QR code on every PDF |
